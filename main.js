@@ -21,7 +21,7 @@ var logger = new winston.Logger({
     exitOnError: false
 }); 
 
-rws.listen(8081,'135.17.178.64',function (err){
+rws.listen(8081,localhost,function (err){
     if (err){
 	   console.log("rws error");
     } 

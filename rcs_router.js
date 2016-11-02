@@ -131,18 +131,6 @@ else{
     logger.debug("A quest from "+req.ip);
   });
 
-/*
-  var server = app.listen(8082,'10.12.0.133',function (err) {
-  if(err){
-	logger.error("Fail to bind to socket "+err);
-  }
-  var host = server.address().address;
-  var port = server.address().port;
 
-  logger.info("API simulator listening at http://%s:%s", host, port);
-
-  });
-*/
-  }
 
   module.exports = app;
