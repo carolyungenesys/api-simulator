@@ -73,7 +73,7 @@
         callRecording['recording']['mediaFiles'][i]['callUUID']=_uuid;
         callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']={};
         callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['storage']="webDAV";
-        if (config[index]['voice'][i]['encryption']=='ture'){
+        if (config[index]['voice'][i]['encryption']=='true'){
           callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['path']="http://10.12.0.132/recordings/voice/"+_uuid+".mp3.bin";
           callRecording['recording']['mediaFiles'][i]['mediaId']=_uuid+"_Voice_Rec.mp3";
           callRecording['recording']['mediaFiles'][i]['pkcs7']='-----BEGIN PKCS7-----\nMIIBNQYJKoZIhvcNAQcDoIIBJjCCASICAQAxgfAwge0CAQAwVjBRMQswCQYDVQQGEwJVUzELMAkG\nA1UECAwCQ0ExEjAQBgNVBAcMCURhbHkgQ2l0eTEQMA4GA1UECgwHR2VuZXN5czEPMA0GA1UEAwwG\nZ2lyX3FhAgEKMA0GCSqGSIb3DQEBAQUABIGAsYZ1QVw3dmeTRz1QwS7mbj1bffGQznP+9wjAf7TQ\nALoeolF1ctmm+xXOvXdpuUHfnmTqeJXF9Ov2sQfIG3kXr4nuY87kMpiFIlqHQfQ4G0taMUs6KDff\nI/IYEx0wX/VloM6uN7Q564xDAffA8V4HnBXgxm8B2zm3aQrXMhttMjUwKgYJKoZIhvcNAQcBMB0G\nCWCGSAFlAwQBKgQQ5JL1BpqK71JXStm+mbnHiw==\n-----END PKCS7-----\n';
@@ -101,7 +101,7 @@
       callRecording['recording']['eventHistory'][0]['event']="Joined";
       res.status(200).json(callRecording);
     }
-  	//logger.info("Worker ",cluster.worker.id," get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
+  	logger.info("Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
   });
 
 
@@ -143,7 +143,7 @@
       }
       res.status(200).json(screenRecording);
     }
-  	//logger.info("Worker ",cluster.worker.id," get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
+  	logger.info("Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
   });
 
 
@@ -164,7 +164,7 @@
     res.status(404).send("fail to find corresponding test case in config file!");
   }else{
     var _media_index = getMediaIndex(_case_index, _media_id);
-    if (_media_id == null){
+    if (_media_index == null){
       res.status(404).send("fail to find corresponding media id for test case in config file!");
     }else{
       var _file_path = config[_case_index]['voice'][_media_index]['mediaPath'];
@@ -172,9 +172,7 @@
       res.status(200).send(mp3);
     }
   }
-
-   //logger.debug("A quest from "+req.ip);
-   //logger.info("Worker ",cluster.worker.id," Get a request to download file from ccid ",_ccid,", media id ",mediaid," and media file ",_media_name);
+   logger.info("Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id);
  });
 
 
@@ -188,7 +186,7 @@
       res.status(404).send("fail to find corresponding test case in config file!");
     }else{
       var _media_index = getMediaIndex(_case_index, _media_id);
-      if (_media_id == null){
+      if (_media_index == null){
         res.status(404).send("fail to find corresponding media id for test case in config file!");
       }else{
         var _file_path = config[_case_index]['screen'][_media_index]['mediaPath'];
@@ -196,13 +194,12 @@
         res.status(200).send(mp4);
       }
     }
-      //logger.debug("A quest from "+req.ip);
-      //logger.info("Worker ",cluster.worker.id," get a request to download file from ccid ",_ccid,", media id ",_id," and media file ",_media_name);
-    });
+    logger.info("Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_name);
+  });
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.post('/internal-api/contact-centers/:ccid/screen-recordings', upload.array(), function (req, res, next) {
+  app.post('/internal-api/contact-centers/:ccid/screen-recordings', function (req, res, next) {
     var _muxer1 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][0];
     var _muxer2 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][1];
     res.status(200).send("{status:0}");
@@ -212,11 +209,15 @@
   app.get('/api/v2/ops/contact-centers/:ccid/settings/screen-recording-encryption', function (req, res) {
     var _id = req.params.ccid;
     res.json(encryption);
-    logger.info("Worker ",cluster.worker.id," get a request to screen-recording-encryption from ",_id);
+    logger.info("Get a request to screen-recording-encryption from ",_id);
   }); 
 
   app.delete('/internal-api/contact-centers/:ccid/screen-recordings/:rec_id/content/:mediafile.mp4', function (req, res){
-   res.status(200).send("200 OK!");
+    var _ccid = req.params.ccid;
+    var _rec_id = req.params.rec_id;
+    var _media_id = req.params.medianame;
+    res.status(200).send("200 OK!");
+    logger.info("Delete media file "+_media_id+" from ccid "+_ccid+" media id "+_rec_id);
   });
       //}
       

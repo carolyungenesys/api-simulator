@@ -1,5 +1,5 @@
-var rws = require('./rws_router.js');
-var rcs = require('./rcs_router.js');
+var rws = require('./router/rws_router.js');
+var rcs = require('./router/rcs_router.js');
 var fs = require('fs');
 var winston = require('winston');
 
@@ -7,7 +7,7 @@ var log_dir="./logs";
 if(!fs.existsSync(log_dir)){
   fs.mkdirSync(log_dir);
 }
-global.config = JSON.parse(fs.readFileSync("./config.json"));
+global.config = JSON.parse(fs.readFileSync("./config/config.json"));
 const tsFormat = () => (new Date()).toLocaleTimeString();
 global.logger = new winston.Logger({
     transports: [

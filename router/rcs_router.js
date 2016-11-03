@@ -52,7 +52,7 @@
       res.status(404).send("fail to find corresponding test case in config file!");
     }else{
       var _media_index = getMediaIndex(_case_index, _media_id);
-      if (_media_id == null){
+      if (_media_index == null){
         res.status(404).send("fail to find corresponding media id for test case in config file!");
       }else{
         var _file_path = config[_case_index]['voice'][_media_index]['mediaPath'];
@@ -60,6 +60,7 @@
         res.status(200).send(mp3);
       }
     }
+    logger.info("Get a request to download encrypted call recording ",_media_id," from ccid ",_ccid,", recording id ",_rec_id);
     });
 
   //This method provide service for GET /rcs/contact-centers/:ccid/user-recordings/:id/play/:medianame.mp3
@@ -71,7 +72,7 @@
       res.status(404).send("fail to find corresponding test case in config file!");
     }else{
       var _media_index = getMediaIndex(_case_index, _media_id);
-      if (_media_id == null){
+      if (_media_index == null){
         res.status(404).send("fail to find corresponding media id for test case in config file!");
       }else{
         var _file_path = config[_case_index]['voice'][_media_index]['mediaPath'];
@@ -79,6 +80,7 @@
         res.status(200).send(mp3);
       }
     }
+    logger.info("Get a request to download encrypted call recording ",_media_id," recording id ",_rec_id);
   });
 
   //This method provide service for GET /rcs/contact-centers/:ccid/user-recordings/:id/play/:medianame.mp4
@@ -91,7 +93,7 @@
       res.status(404).send("fail to find corresponding test case in config file!");
     }else{
       var _media_index = getMediaIndex(_case_index, _media_id);
-      if (_media_id == null){
+      if (_media_index == null){
         res.status(404).send("fail to find corresponding media id for test case in config file!");
       }else{
         var _file_path = config[_case_index]['voice'][_media_index]['mediaPath'];
@@ -99,6 +101,7 @@
         res.status(200).send(mp4);
       }
     }
+    logger.info("Get a request to download screen recording ",_media_id," from ccid ",_ccid,", recording id ",_rec_id);
     })
 
   app.get('/rcs/screen-recordings/:id/content/:medianame.mp4', function (req, res) {
@@ -109,7 +112,7 @@
       res.status(404).send("fail to find corresponding test case in config file!");
     }else{
       var _media_index = getMediaIndex(_case_index, _media_id);
-      if (_media_id == null){
+      if (_media_index == null){
         res.status(404).send("fail to find corresponding media id for test case in config file!");
       }else{
         var _file_path = config[_case_index]['voice'][_media_index]['mediaPath'];
@@ -117,6 +120,7 @@
         res.status(200).send(mp4);
       }
     }
+    logger.info("Get a request to download screen recording ",_media_id,", recording id ",_rec_id);
   });
 
   app.get('/rcs/recordings/:id/play/:medianame.mp3', function (req, res) {
@@ -127,7 +131,7 @@
       res.status(404).send("fail to find corresponding test case in config file!");
     }else{
       var _media_index = getMediaIndex(_case_index, _media_id);
-      if (_media_id == null){
+      if (_media_index == null){
         res.status(404).send("fail to find corresponding media id for test case in config file!");
       }else{
         var _file_path = config[_case_index]['voice'][_media_index]['mediaPath'];
@@ -135,13 +139,14 @@
         res.status(200).send(mp3);
       }
     }
+    logger.info("Get a request to download nonencrypted call recording ",_media_id," recording id ",_rec_id);
   });
 
 
   //Get /, return 503
   app.get('/',function(req, res){
     res.status(404).send("404!!Page not found!!");
-    //logger.debug("A quest from "+req.ip);
+    logger.debug("A quest from "+req.ip);
   });
 
 //}
