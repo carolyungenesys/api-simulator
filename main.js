@@ -1,9 +1,15 @@
 var rws = require('./rws_router.js');
-//var rcs = require('./rcs_router.js');
-
+var rcs = require('./rcs_router.js');
+var fs = require('fs');
 var winston = require('winston');
+
+var log_dir="./logs";
+if(!fs.existsSync(log_dir)){
+  fs.mkdirSync(log_dir);
+}
+global.config = JSON.parse(fs.readFileSync("./config.json"));
 const tsFormat = () => (new Date()).toLocaleTimeString();
-var logger = new winston.Logger({
+global.logger = new winston.Logger({
     transports: [
         new (winston.transports.Console)({
             colorize: true,
@@ -21,9 +27,16 @@ var logger = new winston.Logger({
     exitOnError: false
 }); 
 
-rws.listen(8081,localhost,function (err){
+var rws_listener = rws.listen(8081, function (err){
     if (err){
-	   console.log("rws error");
+	   console.error(err);
     } 
 });
 
+var rcs_listener = rcs.listen(8082, function (err){
+    if (err){
+       console.error(err);
+    } 
+});
+
+global.rws_port = rws_listener.address().port;
