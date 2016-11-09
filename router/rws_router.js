@@ -1,47 +1,29 @@
-  var express = require('express');
-  var fs=require('fs');
-  var app = express();
-  var path='./media';
-  var cluster=require('cluster');
-  var bodyParser = require('body-parser');
-  var multer = require('multer');
-  var upload = multer();
-  var uuid = require('uuid');
-  var numCPUs=require('os').cpus().length;
-  //var numCPUs=2;
-  var winston = require('winston');
+var express = require('express');
+var fs=require('fs');
+var app = express();
+var path='./media';
+var cluster=require('cluster');
+var bodyParser = require('body-parser');
+var multer = require('multer');
+var upload = multer();
+var uuid = require('uuid');
+var numCPUs=require('os').cpus().length;
+//var numCPUs=2;
+var winston = require('winston');
+var functions = require('./functions.js');
 
-  function getCaseIndex(case_id){
-    for (var i=0; i<config.length; i++){
-      if (case_id == config[i]['case_id']){
-        return i;
-        break;
-      }
-    }
-    return null;
+//fork process
+/*
+if (cluster.isMaster) {
+  numCPUs=(numCPUs-2)>0?numCPUs-2:numCPUs;
+  for (var i = 0; i < numCPUs; i++){
+    cluster.fork();
   }
 
-  function getMediaIndex(index,media_id){
-    for (var i=0; i<config[index]['voice'].length; i++){
-      if (media_id == config[index]['voice'][i]['mediaID']){
-        return i;
-        break;
-      }
-    }
-    return null;
-  }
-  //fork process
-  /*
-  if (cluster.isMaster) {
-    numCPUs=(numCPUs-2)>0?numCPUs-2:numCPUs;
-    for (var i = 0; i < numCPUs; i++){
-      cluster.fork();
-    }
-
-    cluster.on('exit', (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} died`);
-    });
-  }else{
+  cluster.on('exit', (worker, code, signal) => {
+  console.log(`worker ${worker.process.pid} died`);
+  });
+}else{
   // logger.info("Worker ",cluster.worker.id,"is running");
   //logger.info("Worker ",cluster.worker.id," is running");
   
@@ -50,58 +32,8 @@
   app.get('/api/v2/ops/contact-centers/:ccid/recordings/:rec_id', function (req, res){
   	var _rec_id = req.params.rec_id;
   	var _id = req.params.ccid;
-    var _uuid;
-    
-    var callRecording={"statusCode":0,"recording":{"callerPhoneNumber":"555001",
-    "dialedPhoneNumber":"10001","mediaFiles":[],"eventHistory":[],"callType":"Inbound",
-    "region":"region1"}};
-    var index = getCaseIndex(_rec_id);
-    if (index == null){
-      res.status(404).send("fail to find corresponding test case in config file!");
-    }else{
-      callRecording['recording']['id']=_rec_id;
-      callRecording['recording']['startTime']=config[index]['startTime'];
-      callRecording['recording']['stopTime']=config[index]['stopTime'];
-      for (var i=0; i<config[index]['voice'].length; i++){
-        _uuid = uuid.v4();
-        config[index]['voice'][i]['mediaID']=_uuid;
-        callRecording['recording']['mediaFiles'][i]={};
-        callRecording['recording']['mediaFiles'][i]['mediaUri']="http://"+req.hostname+":"+rws_port+"/api/v2/ops/contact-centers/"+_id+"/recordings/"+_rec_id+"/play/"+_uuid+".mp3";
-        callRecording['recording']['mediaFiles'][i]['mediaPath']="/ops/contact-centers/"+_id+"/recordings/"+_rec_id+"/play/"+_uuid+".mp3";
-        callRecording['recording']['mediaFiles'][i]['startTime']=config[index]['voice'][i]['startTime'];
-        callRecording['recording']['mediaFiles'][i]['stopTime']=config[index]['voice'][i]['stopTime'];
-        callRecording['recording']['mediaFiles'][i]['callUUID']=_uuid;
-        callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']={};
-        callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['storage']="webDAV";
-        if (config[index]['voice'][i]['encryption']=='true'){
-          callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['path']="http://10.12.0.132/recordings/voice/"+_uuid+".mp3.bin";
-          callRecording['recording']['mediaFiles'][i]['mediaId']=_uuid+"_Voice_Rec.mp3";
-          callRecording['recording']['mediaFiles'][i]['pkcs7']='-----BEGIN PKCS7-----\nMIIBNQYJKoZIhvcNAQcDoIIBJjCCASICAQAxgfAwge0CAQAwVjBRMQswCQYDVQQGEwJVUzELMAkG\nA1UECAwCQ0ExEjAQBgNVBAcMCURhbHkgQ2l0eTEQMA4GA1UECgwHR2VuZXN5czEPMA0GA1UEAwwG\nZ2lyX3FhAgEKMA0GCSqGSIb3DQEBAQUABIGAsYZ1QVw3dmeTRz1QwS7mbj1bffGQznP+9wjAf7TQ\nALoeolF1ctmm+xXOvXdpuUHfnmTqeJXF9Ov2sQfIG3kXr4nuY87kMpiFIlqHQfQ4G0taMUs6KDff\nI/IYEx0wX/VloM6uN7Q564xDAffA8V4HnBXgxm8B2zm3aQrXMhttMjUwKgYJKoZIhvcNAQcBMB0G\nCWCGSAFlAwQBKgQQ5JL1BpqK71JXStm+mbnHiw==\n-----END PKCS7-----\n';
-        }else{
-          callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['path']="http://10.12.0.132/recordings/voice/"+_uuid+".mp3";
-          callRecording['recording']['mediaFiles'][i]['mediaId']=_uuid+"_Voice_Rec.mp3";
-        }
-        callRecording['recording']['mediaFiles'][i]['type']="audio/mp3";
-        callRecording['recording']['mediaFiles'][i]['duration']=config[index]['voice'][i]['duration'];
-        callRecording['recording']['mediaFiles'][i]['tenant']="Environment";
-        callRecording['recording']['mediaFiles'][i]['ivrprofile']="GIR_MP3_No_Encryption";
-        callRecording['recording']['mediaFiles'][i]['size']=config[index]['voice'][i]['size'];
-        callRecording['recording']['mediaFiles'][i]['parameters']={};
-        callRecording['recording']['mediaFiles'][i]['parameters']['id']=_rec_id;
-        callRecording['recording']['mediaFiles'][i]['parameters']['callUuid']=_rec_id;
-        callRecording['recording']['mediaFiles'][i]['partitions']=[];
-        callRecording['recording']['mediaFiles'][i]['accessgroups']=["/"];
-      }
-      callRecording['recording']['eventHistory'][0]={};
-      callRecording['recording']['eventHistory'][0]['occurredAt']="2016-05-13T18:54:44.000+0000";
-      callRecording['recording']['eventHistory'][0]['calluuid']=_rec_id;
-      callRecording['recording']['eventHistory'][0]['contact']={};
-      callRecording['recording']['eventHistory'][0]['contact']['type']="External";
-      callRecording['recording']['eventHistory'][0]['contact']['phoneNumber']="555001";
-      callRecording['recording']['eventHistory'][0]['event']="Joined";
-      res.status(200).json(callRecording);
-    }
-  	logger.info("Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
+    functions.formConfig(_rec_id, _id,req,res,'voice');
+  	logger.info("RWS: Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
   });
 
 
@@ -109,41 +41,8 @@
   app.get('/internal-api/contact-centers/:ccid/screen-recordings/:rec_id', function (req, res){
   	var _rec_id = req.params.rec_id;
   	var _id = req.params.ccid;
-    var _uuid;
-
-    var screenRecording={"statusCode":0,"recording":{"mediaFiles":[],"eventHistory":[],
-    "region":"region1"}};
-    var index = getCaseIndex(_rec_id);
-    if (index == null){
-      res.status(404).send("fail to find corresponding test case in config file!");
-    }else{
-      screenRecording['recording']['id']=_rec_id;
-      screenRecording['recording']['startTime']=config[index]['startTime'];
-      screenRecording['recording']['stopTime']=config[index]['stopTime'];
-      for (var i=0; i<config[index]['voice'].length; i++){
-        _uuid = uuid.v4();
-        config[index]['screen'][i]['mediaID']=_uuid;
-        screenRecording['recording']['mediaFiles'][i]={};
-        screenRecording['recording']['mediaFiles'][i]['mediaUri']="http://"+req.hostname+":"+rws_port+"/internal-api/contact-centers/"+_id+"/screen-recordings/"+_rec_id+"/content/"+_uuid+".mp4";
-        screenRecording['recording']['mediaFiles'][i]['mediaPath']="/contact-centers/"+_id+"/screen-recordings/"+_rec_id+"/content/"+_uuid+".mp4";
-        screenRecording['recording']['mediaFiles'][i]['startTime']=config[index]['screen'][i]['startTime'];
-        screenRecording['recording']['mediaFiles'][i]['stopTime']=config[index]['screen'][i]['stopTime'];
-        screenRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']={};
-        screenRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['storage']="webDAV";
-        screenRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['data']={};
-        screenRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['data']['storagePath']="http://10.12.0.132/recordings/screen/";
-        screenRecording['recording']['mediaFiles'][i]['mediaId']=_rec_id;
-        screenRecording['recording']['mediaFiles'][i]['type']="video/mp4";
-        screenRecording['recording']['mediaFiles'][i]['duration']=config[index]['screen']['duration'];
-        screenRecording['recording']['mediaFiles'][i]['size']=config[index]['screen']['size'];
-        screenRecording['recording']['mediaFiles'][i]['parameters']={};
-        screenRecording['recording']['mediaFiles'][i]['parameters']['region']="region1";
-        screenRecording['recording']['mediaFiles'][i]['parameters']['contact']={};
-        screenRecording['recording']['mediaFiles'][i]['parameters']['contact']['userName']="agent6001@genesys.com";
-      }
-      res.status(200).json(screenRecording);
-    }
-  	logger.info("Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
+    functions.formConfig(_rec_id,_id,req,res,'screen');
+  	logger.info("RWS: Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
   });
 
 
@@ -159,20 +58,8 @@
    var _ccid = req.params.ccid;
    var _rec_id = req.params.id;
    var _media_id = req.params.medianame;
-   var _case_index = getCaseIndex(_rec_id);
-   if (_case_index == null){
-    res.status(404).send("fail to find corresponding test case in config file!");
-  }else{
-    var _media_index = getMediaIndex(_case_index, _media_id);
-    if (_media_index == null){
-      res.status(404).send("fail to find corresponding media id for test case in config file!");
-    }else{
-      var _file_path = config[_case_index]['voice'][_media_index]['mediaPath'];
-      var mp3 = new Buffer(fs.readFileSync(_file_path));
-      res.status(200).send(mp3);
-    }
-  }
-   logger.info("Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id);
+   functions.getMediaPath('voice', _rec_id, _media_id, req, res);
+   logger.info("RWS: Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id+".mp3");
  });
 
 
@@ -181,33 +68,33 @@
     var _ccid = req.params.ccid;
     var _rec_id = req.params.id;
     var _media_id = req.params.medianame;
-    var _case_index = getCaseIndex(_rec_id);
-    if (_case_index == null){
-      res.status(404).send("fail to find corresponding test case in config file!");
-    }else{
-      var _media_index = getMediaIndex(_case_index, _media_id);
-      if (_media_index == null){
-        res.status(404).send("fail to find corresponding media id for test case in config file!");
-      }else{
-        var _file_path = config[_case_index]['screen'][_media_index]['mediaPath'];
-        var mp4=new Buffer(fs.readFileSync(_file_path));
-        res.status(200).send(mp4);
-      }
-    }
-    logger.info("Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_name);
+    functions.getMediaPath('screen', _rec_id, _media_id, req, res);
+    logger.info("Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id,".mp4");
   });
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.post('/internal-api/contact-centers/:ccid/screen-recordings', function (req, res, next) {
-    var _muxer1 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][0];
-    var _muxer2 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][1];
-    res.status(200).send("{status:0}");
-    logger.info("Post Request from "+req.ip+ " for muxer id "+_muxer1+" "+_muxer2);
+  app.post('/internal-api/contact-centers/:ccid/screen-recordings', function (req, res) {
+    functions.savePost(req, res);
   });
+
 
   app.get('/api/v2/ops/contact-centers/:ccid/settings/screen-recording-encryption', function (req, res) {
     var _id = req.params.ccid;
+    var encryption = {
+      "statusCode": 0,
+      "settings": [
+      {
+        "name": "certificatealias-1",
+        "value": "rcs_Environment:1:C=US,ST=CA,L=Daly City,O=Genesys,CN=gir_qa:10"
+      },
+      {
+        "name": "certificate-1",
+        "value": "-----BEGIN CERTIFICATE-----\r\nMIIC8TCCAdmgAwIBAgIBCjANBgkqhkiG9w0BAQUFADBRMQswCQYDVQQGEwJVUzEL\r\nMAkGA1UECAwCQ0ExEjAQBgNVBAcMCURhbHkgQ2l0eTEQMA4GA1UECgwHR2VuZXN5\r\nczEPMA0GA1UEAwwGZ2lyX3FhMB4XDTE1MTEwMzE3MzYzMFoXDTI1MTAzMTE3MzYz\r\nMFowOjEMMAoGA1UEAwwDZ2lyMQswCQYDVQQIDAJDQTELMAkGA1UEBhMCVVMxEDAO\r\nBgNVBAoMB0dlbmVzeXMwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAM5BB3CO\r\nlNeMyvXeb/gL47L3y8liT247w4FDDXcLJ6ZOM8yDCg9zkdEVXl73xT+hIBOsBdkV\r\nCvkryXgv8UBMLVVzuy/6NGPf/059eai/CgpDaUb059/g6i+KQINkJmpIzpLJAQ+c\r\nIqa0jV2uu35zEkM5GD21QLuk2IJGfb/vbeslAgMBAAGjbzBtMAkGA1UdEwQCMAAw\r\nHQYDVR0OBBYEFDxSXuIdfXcBpj9MfyKqZ2Y/7mYBMB8GA1UdIwQYMBaAFONw1Cc/\r\nk2z+e+xYxObMswG9bcFTMAsGA1UdDwQEAwIFoDATBgNVHSUEDDAKBggrBgEFBQcD\r\nATANBgkqhkiG9w0BAQUFAAOCAQEAckUQP4b+xjJDXyBRL0XStU2fvDZULFnx8AN4\r\nCP6449OeHlWBML/yLDUABcexaSqcSjaf22zQJ7DQONhwRXnpiqX0QPD7wAbC48Ei\r\nGVVmRWZDNkbIuG4BTUk0SkERnHSseytXiM4dKL8gXGr3oVVXGtafXZvOo3MHszWZ\r\nwuQvxQlLPAKLMlA4lHPlQAadd6Y13jJTK+MPX4kedDlimMmYCfglQ5y1vF2FQ+RE\r\n7KPpoo96dGvlifK7vCPDOHvo0obj/jd8ellxMCkp1xZ0NAutN9bBqicSVZNQFTJG\r\nqGsHz2+nEDuUAvahznhJL5UBf1r/LZSB5uKcMacjGoMKlqb4hg==\r\n-----END CERTIFICATE-----\r\n"
+      }
+      ],
+      "key": "name"
+    }
     res.json(encryption);
     logger.info("Get a request to screen-recording-encryption from ",_id);
   }); 
@@ -219,6 +106,6 @@
     res.status(200).send("200 OK!");
     logger.info("Delete media file "+_media_id+" from ccid "+_ccid+" media id "+_rec_id);
   });
-      //}
-      
-  module.exports=app;
+//}
+
+module.exports=app;
