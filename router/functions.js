@@ -26,16 +26,34 @@ exports.getMediaIndex = function getMediaIndex(index,media_id,type){
 */
 
 exports.savePost = function(req, res){
-  insertModel.create(req.body, function(err,result){
-    if (err){
-      console.error(err);
+  insertModel.findOne({'id':req.body['id']}, function(err,obj){
+    if (obj == null){
+      logger.info('Create post metadata');
+      insertModel.create(req.body, function(err,result){
+        if (err){
+          console.error(err);
+        }else{
+          var _muxer1 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][0];
+          var _muxer2 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][1];
+          res.status(200).send("{status:0}");
+          logger.info("Post Request from "+req.ip+ " for muxer id "+_muxer1+" "+_muxer2);
+        }
+      });
     }else{
-      var _muxer1 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][0];
-      var _muxer2 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][1];
-      res.status(200).send("{status:0}");
-      logger.info("Post Request from "+req.ip+ " for muxer id "+_muxer1+" "+_muxer2);
+      logger.info('Update post metadata');
+      insertModel.update({'_id':obj['_id']},req.body, function(err,result){
+        if (err){
+          console.error(err);
+        }else{
+          var _muxer1 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][0];
+          var _muxer2 = req.body['mediaFiles'][0]['parameters']['muxed_mediaIds'][1];
+          res.status(200).send("{status:0}");
+          logger.info("Post Request from "+req.ip+ " for muxer id "+_muxer1+" "+_muxer2);
+        }
+      });
     }
   });
+  
 }
 
 exports.getMediaPath = function(type, loadTest, mediaId, req, res){
@@ -48,18 +66,18 @@ exports.getMediaPath = function(type, loadTest, mediaId, req, res){
       config = obj;
       if (type == 'voice'){
         for (var i=0; i<obj['voice'].length; i++){
-          findMedia('voice', obj['voice'][i], mediaId, findMedia_callback, req, res);
+          findMedia('voice', obj['voice'][i], mediaId, req, res);
         }
       }else{
         for (var i=0; i<obj['screen'].length; i++){
-          findMedia('screen', obj['screen'][i], mediaId, findMedia_callback, req, res);
+          findMedia('screen', obj['screen'][i], mediaId, req, res);
         }
       }
     }
   });
 }
 
-function findMedia(type, id, _media_id, callback, req, res){
+function findMedia(type, id, _media_id, req, res){
   var recording_config={};
   if (type == 'voice'){
     voiceModel.findById(id, function(err, obj){
@@ -69,7 +87,15 @@ function findMedia(type, id, _media_id, callback, req, res){
       }else{
         logger.info("get media");
         recording_config = obj;
-        callback(type, _media_id, recording_config, req, res);
+        logger.debug('media id: ',_media_id);
+        logger.debug('recording config media id: ', recording_config['mediaID']);
+        if (recording_config['mediaID'] == _media_id){
+          var _file_path = recording_config['mediaPath'];
+          var file = new Buffer(fs.readFileSync(_file_path));
+          res.type('mp3');
+          logger.info('send media success');
+          res.status(200).send(file);
+        }
       }
     });
   }else{
@@ -79,25 +105,17 @@ function findMedia(type, id, _media_id, callback, req, res){
         res.status(500).send("Fail to load mediaFile");
       }else{
         recording_config = obj
-        callback(type, _media_id, recording_config, req, res);
+        logger.debug('media id: ',_media_id);
+        logger.debug('recording config media id: ', recording_config['mediaID']);
+        if (recording_config['mediaID'] == _media_id){
+          var _file_path = recording_config['mediaPath'];
+          var file = new Buffer(fs.readFileSync(_file_path));
+          res.type('mp4');
+          logger.info('send media success');
+          res.status(200).send(file);
+        }
       }
     });
-  }
-}
-
-function findMedia_callback(type, _media_id, recording_config, req, res){
-  logger.debug('media id: ',_media_id);
-  logger.debug('recording config media id: ', recording_config['mediaID']);
-  if (recording_config['mediaID'] == _media_id){
-    var _file_path = recording_config['mediaPath'];
-    var file = new Buffer(fs.readFileSync(_file_path));
-    if (type == 'voice'){
-      res.type('mp3');
-    }else{
-      res.type('mp4');
-    }
-    logger.info('send media success');
-    res.status(200).send(file);
   }
 }
 
@@ -126,13 +144,13 @@ exports.formConfig = function(loadTest, ccid, req, res, type){
         screenRecording['recording']['stopTime']=config['stopTime'];
       }
       for (var i=0; i<config[type].length; i++){
-        getLoadTest_recording(type, loadTest, ccid, config[type][i], i==config[type].length-1, i, req, res, formConfig_callback);
+        getLoadTest_recording(type, loadTest, ccid, config[type][i], i==config[type].length-1, i, req, res);
       }
     }
   });
 }
 
-function getLoadTest_recording (type, loadTest, ccid, id, send, i, req, res, callback){
+function getLoadTest_recording (type, loadTest, ccid, id, send, i, req, res){
   var recording_config = {};
   if (type == 'voice'){
     voiceModel.findById(id, function(err, obj){
@@ -152,12 +170,8 @@ function getLoadTest_recording (type, loadTest, ccid, id, send, i, req, res, cal
       }
     });
   }
-  callback(type, id, loadTest, ccid, recording_config, send, i, req, res);
-}
-
-function formConfig_callback(type, dbid, _rec_id, _id, recording_config, send, i, req, res){
   var _uuid = uuid.v4();
-  voiceModel.update({'_id':dbid},{'mediaID':_uuid},function(err,result){
+  voiceModel.update({'ccid':id},{'mediaID':_uuid},function(err,result){
     if (err){
       logger.info(err);
     }
@@ -169,8 +183,8 @@ function formConfig_callback(type, dbid, _rec_id, _id, recording_config, send, i
         callRecording['recording']['mediaFiles'][i]['stopTime']=recording_config['stopTime'];
         callRecording['recording']['mediaFiles'][i]['callUUID']=_uuid;
         callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']={};
-        callRecording['recording']['mediaFiles'][i]['mediaUri']="http://"+req.hostname+":"+rws_port+"/api/v2/ops/contact-centers/"+_id+"/recordings/"+_rec_id+"/play/"+_uuid+".mp3";
-        callRecording['recording']['mediaFiles'][i]['mediaPath']="/ops/contact-centers/"+_id+"/recordings/"+_rec_id+"/play/"+_uuid+".mp3";
+        callRecording['recording']['mediaFiles'][i]['mediaUri']="http://"+req.hostname+":"+rws_port+"/api/v2/ops/contact-centers/"+ccid+"/recordings/"+loadTest+"/play/"+_uuid+".mp3";
+        callRecording['recording']['mediaFiles'][i]['mediaPath']="/ops/contact-centers/"+ccid+"/recordings/"+loadTest+"/play/"+_uuid+".mp3";
 
         callRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']['storage']="webDAV";
         if (recording_config['encryption']=='true'){
@@ -187,14 +201,14 @@ function formConfig_callback(type, dbid, _rec_id, _id, recording_config, send, i
         callRecording['recording']['mediaFiles'][i]['ivrprofile']="GIR_MP3_No_Encryption";
         callRecording['recording']['mediaFiles'][i]['size']=recording_config['size'];
         callRecording['recording']['mediaFiles'][i]['parameters']={};
-        callRecording['recording']['mediaFiles'][i]['parameters']['id']=_rec_id;
-        callRecording['recording']['mediaFiles'][i]['parameters']['callUuid']=_rec_id;
+        callRecording['recording']['mediaFiles'][i]['parameters']['id']=loadTest;
+        callRecording['recording']['mediaFiles'][i]['parameters']['callUuid']=loadTest;
         callRecording['recording']['mediaFiles'][i]['partitions']=[];
         callRecording['recording']['mediaFiles'][i]['accessgroups']=["/"];
       }else{
         screenRecording['recording']['mediaFiles'][i]={};
-        screenRecording['recording']['mediaFiles'][i]['mediaUri']="http://"+req.hostname+":"+rws_port+"/internal-api/contact-centers/"+_id+"/screen-recordings/"+_rec_id+"/content/"+_uuid+".mp4";
-        screenRecording['recording']['mediaFiles'][i]['mediaPath']="/contact-centers/"+_id+"/screen-recordings/"+_rec_id+"/content/"+_uuid+".mp4";
+        screenRecording['recording']['mediaFiles'][i]['mediaUri']="http://"+req.hostname+":"+rws_port+"/internal-api/contact-centers/"+ccid+"/screen-recordings/"+loadTest+"/content/"+_uuid+".mp4";
+        screenRecording['recording']['mediaFiles'][i]['mediaPath']="/contact-centers/"+ccid+"/screen-recordings/"+loadTest+"/content/"+_uuid+".mp4";
         screenRecording['recording']['mediaFiles'][i]['startTime']=recording_config['startTime'];
         screenRecording['recording']['mediaFiles'][i]['stopTime']=recording_config['stopTime'];
         screenRecording['recording']['mediaFiles'][i]['originalMediaDescriptor']={};
@@ -220,5 +234,4 @@ function formConfig_callback(type, dbid, _rec_id, _id, recording_config, send, i
       }
     }
   });
-  
 }

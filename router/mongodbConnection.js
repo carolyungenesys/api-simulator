@@ -23,7 +23,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/mongodb/update', function(req, res){
 	for (var i=0; i<req.body.length; i++){
 		var flag;
-		global.Temp = req.body[i];
+		var tmpid;
+		var Temp = req.body[i];
 		caseModel.findOne({'case_id':Temp['case_id']}, function(err, obj){
 			if (obj == null){
 				logger.info('Could not find existing test case. Going to insert to db.');
@@ -58,6 +59,7 @@ app.post('/mongodb/update', function(req, res){
 						}
 					});
 				}else{
+					tmpid = voiceTmp['_id'];
 					delete voiceTmp['_id'];
 					voiceModel.update(voiceTmp, function(err,voice){
 						if (err){
@@ -91,6 +93,7 @@ app.post('/mongodb/update', function(req, res){
 						}
 					});
 				}else{
+					tmpid = screenTmp['_id'];
 					delete screenTmp['_id'];
 					screenModel.update(screenTmp, function(err,screen){
 						if (err) {
@@ -114,8 +117,9 @@ app.post('/mongodb/update', function(req, res){
 					}
 				});
 			}else{
+				tmpid = caseTmp['_id'];
 				delete caseTmp['_id'];
-				caseModel.update(caseTmp, function(err,test){
+				caseModel.update({'_id':tmpid},caseTmp, function(err,test){
 					if (err) {
 						logger.error(err);
 						res.status(500).send('Fail update test case');
@@ -161,6 +165,22 @@ app.get('/mongodb/insert_recording/metadata/:rec_id', function(req, res){
 	var tmp = {};
 	var _rec_id = req.params.rec_id;
 	insertModel.findOne({'id':_rec_id}, function(err, obj){
+		if (err){
+			console.error(err);
+		}
+		if (obj == null){
+			res.status(404).send('No recording found')
+		}else{
+			tmp = obj;
+			res.status(200).json(tmp);
+		}
+	});
+});
+
+app.get('/mongodb/insert_recording/search', function(req, res){
+	var tmp = {};
+	//console.log(req.query);
+	insertModel.findOne({'size':'14258043'}, function(err, obj){
 		if (err){
 			console.error(err);
 		}

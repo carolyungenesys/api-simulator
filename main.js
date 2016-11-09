@@ -82,18 +82,15 @@ var mongo_listener = mongo.listen(8083, function (err){
     if (err){
         console.error(err);
     }
-    var rws_listener = rws.listen(8081,,function (err){
+    var rws_listener = rws.listen(8081, function (err){
     if (err){
        console.error(err);
     } 
     global.rws_port = rws_listener.address().port;
     });
-
     var rcs_listener = rcs.listen(8082, function (err){
         if (err){
            console.error(err);
         } 
     });
-
 });
-

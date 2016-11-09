@@ -36,7 +36,6 @@ var functions = require('./functions.js');
   app.get('/rcs/recordings/:id/play/:medianame.mp3.bin', function (req, res) {
     var _rec_id = req.params.id;
     var _media_id = req.params.medianame;
-    var _case_index = functions.getCaseIndex(_rec_id);
     functions.getMediaPath('voice', _rec_id, _media_id, req, res);
     logger.info("RCS: Get a request to download encrypted call recording ",_media_id," recording id ",_rec_id);
   });
@@ -53,7 +52,6 @@ var functions = require('./functions.js');
   app.get('/rcs/screen-recordings/:id/content/:medianame.mp4', function (req, res) {
     var _rec_id = req.params.id;
     var _media_id = req.params.medianame;
-    var _case_index = functions.getCaseIndex(_rec_id);
     functions.getMediaPath('screen', _rec_id, _media_id, req, res);
     logger.info("RCS: Get a request to download screen recording ",_media_id,".mp4 , recording id ",_rec_id);
   });
