@@ -3,20 +3,6 @@ var app = express();
 var fs=require('fs');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-/*
-function findExisting(case_id){
-	caseModel.findOne({'case_id':case_id}, function(err, obj){
-		if (obj == null){
-			logger.info('Could not find existing test case. Going to insert to db.');
-			flag = false;
-		}else{
-			logger.info('Find existing test case in db. Going to update.');
-			flag = true;
-		}
-	return flag;
-	});
-}
-*/
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -134,34 +120,8 @@ app.post('/mongodb/update', function(req, res){
 	res.status(200).send('Update Mongodb Successfully!');
 });
 
-app.get('/mongodb/search/:section/:field/:value',function(req, res){
-	var section = req.params.section;
-	var field = req.params.field;
-	var value = req.params.value;
-	if (section == 'case'){
-		var tmp = {};
-		tmp[field]=value;
-		caseModel.findOne(tmp, function(err, obj){
-			res.send(obj);
-		});
-	}else if (section == 'voice'){
-		var tmp = {};
-		tmp[field]=value;
-		voiceModel.findOne(tmp, function(err, obj){
-			res.send(obj);
-		});
-	}else if (section == 'screen'){
-		var tmp = {};
-		tmp[field]=value;
-		screenModel.findOne(tmp, function(err, obj){
-			res.send(obj);
-		});
-	}else{
-		exit(0);
-	}
-});
-
 app.get('/mongodb/insert_recording/metadata/:rec_id', function(req, res){
+	//logger.info('from db api: ',workers.worker.id);
 	var tmp = {};
 	var _rec_id = req.params.rec_id;
 	insertModel.findOne({'id':_rec_id}, function(err, obj){
@@ -169,26 +129,10 @@ app.get('/mongodb/insert_recording/metadata/:rec_id', function(req, res){
 			console.error(err);
 		}
 		if (obj == null){
-			res.status(404).send('No recording found')
+			//res.status(404).send('No recording found')
 		}else{
 			tmp = obj;
-			res.status(200).json(tmp);
-		}
-	});
-});
-
-app.get('/mongodb/insert_recording/search', function(req, res){
-	var tmp = {};
-	//console.log(req.query);
-	insertModel.findOne({'size':'14258043'}, function(err, obj){
-		if (err){
-			console.error(err);
-		}
-		if (obj == null){
-			res.status(404).send('No recording found')
-		}else{
-			tmp = obj;
-			res.status(200).json(tmp);
+			//res.status(200).json(tmp);
 		}
 	});
 });

@@ -5,6 +5,8 @@ var fs = require('fs');
 var winston = require('winston');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var cluster=require('cluster');
+var numCPUs=require('os').cpus().length;
 var url = 'mongodb://localhost:27017/api_simulator';
 connection = mongoose.connect(url, function(err) {
     if (err) console.log(err);
@@ -78,19 +80,32 @@ global.logger = new winston.Logger({
     exitOnError: false
 }); 
 
-var mongo_listener = mongo.listen(8083, function (err){
-    if (err){
-        console.error(err);
+
+if (cluster.isMaster) {
+    numCPUs=(numCPUs-2)>0?numCPUs-2:numCPUs;
+    for (var i = 0; i < numCPUs; i++){
+        cluster.fork();
     }
-    var rws_listener = rws.listen(8081, function (err){
-    if (err){
-       console.error(err);
-    } 
-    global.rws_port = rws_listener.address().port;
+    cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
     });
-    var rcs_listener = rcs.listen(8082, function (err){
+}else{
+    logger.info("Worker ",cluster.worker.id,"is running");
+    global.workers=cluster;
+    var mongo_listener = mongo.listen(8083, function (err){
+        if (err){
+            console.error(err);
+        }
+        var rws_listener = rws.listen(8081, function (err){
         if (err){
            console.error(err);
         } 
+        global.rws_port = rws_listener.address().port;
+        });
+        var rcs_listener = rcs.listen(8082, function (err){
+            if (err){
+               console.error(err);
+            } 
+        });
     });
-});
+}
