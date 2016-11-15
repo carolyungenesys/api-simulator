@@ -12,64 +12,48 @@ var numCPUs=require('os').cpus().length;
 var winston = require('winston');
 var functions = require('./functions.js');
 
-//fork process
-/*
-if (cluster.isMaster) {
-  numCPUs=(numCPUs-2)>0?numCPUs-2:numCPUs;
-  for (var i = 0; i < numCPUs; i++){
-    cluster.fork();
-  }
-
-  cluster.on('exit', (worker, code, signal) => {
-  console.log(`worker ${worker.process.pid} died`);
-  });
-}else{
-  // logger.info("Worker ",cluster.worker.id,"is running");
-  //logger.info("Worker ",cluster.worker.id," is running");
-  
-  */
   //get /api/v2/ops/contact-centers/:ccid/recordings/:rec_id, return json
-  app.get('/api/v2/ops/contact-centers/:ccid/recordings/:rec_id', function (req, res){
-  	var _rec_id = req.params.rec_id;
-  	var _id = req.params.ccid;
+  app.get('/api/v2/ops/contact-centers/:ccid/recordings/:rec_id', functions.auth, function (req, res){
+    var _rec_id = req.params.rec_id;
+    var _id = req.params.ccid;
     functions.formConfig(_rec_id, _id,req,res,'voice');
-  	logger.info("RWS: Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
+    logger.info("RWS",worker_id,": Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
   });
 
 
   //get /internal-api/contact-centers/:ccid/screen-recordings/:rec_id, return json
-  app.get('/internal-api/contact-centers/:ccid/screen-recordings/:rec_id', function (req, res){
-  	var _rec_id = req.params.rec_id;
-  	var _id = req.params.ccid;
+  app.get('/internal-api/contact-centers/:ccid/screen-recordings/:rec_id', functions.auth, function (req, res){
+    var _rec_id = req.params.rec_id;
+    var _id = req.params.ccid;
     functions.formConfig(_rec_id,_id,req,res,'screen');
-  	logger.info("RWS: Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
+    logger.info("RWS",worker_id,": Get a request to get call recording from ccid ",_id,", recording id ",_rec_id);
   });
 
 
   //Get api/v2/settings/irp-muxer, return 403
-  app.get('api/v2/settings/irp-muxer', function (req, res) {
+  app.get('api/v2/settings/irp-muxer', functions.auth, function (req, res) {
     res.status(403).send("403!");
-    logger.debug("Setting request from "+req.ip);
+    logger.debug("RWS",worker_id,": Setting request from "+req.ip);
   });
 
 
   //get /api/v2/ops/contact-centers/:ccid/recordings/:id/play/:medianame.mp3, return mp3 file
-  app.get('/api/v2/ops/contact-centers/:ccid/recordings/:id/play/:medianame.mp3', function (req, res) {
+  app.get('/api/v2/ops/contact-centers/:ccid/recordings/:id/play/:medianame.mp3', functions.auth, function (req, res) {
    var _ccid = req.params.ccid;
    var _rec_id = req.params.id;
    var _media_id = req.params.medianame;
    functions.getMediaPath('voice', _rec_id, _media_id, req, res);
-   logger.info("RWS: Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id+".mp3");
+   logger.info("RWS",worker_id,": Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id+".mp3");
  });
 
 
   //get /internal-api/contact-centers/:ccid/screen-recordings/:id/content/:medianame.mp4, return mp4 file
-  app.get('/internal-api/contact-centers/:ccid/screen-recordings/:id/content/:medianame.mp4', function (req, res) {
+  app.get('/internal-api/contact-centers/:ccid/screen-recordings/:id/content/:medianame.mp4', functions.auth, function (req, res) {
     var _ccid = req.params.ccid;
     var _rec_id = req.params.id;
     var _media_id = req.params.medianame;
     functions.getMediaPath('screen', _rec_id, _media_id, req, res);
-    logger.info("Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id,".mp4");
+    logger.info("RWS",worker_id,": Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id,".mp4");
   });
 
   app.use(bodyParser.json());
@@ -79,7 +63,7 @@ if (cluster.isMaster) {
   });
 
 
-  app.get('/api/v2/ops/contact-centers/:ccid/settings/screen-recording-encryption', function (req, res) {
+  app.get('/api/v2/ops/contact-centers/:ccid/settings/screen-recording-encryption', functions.auth, function (req, res) {
     var _id = req.params.ccid;
     var encryption = {
       "statusCode": 0,
@@ -96,15 +80,15 @@ if (cluster.isMaster) {
       "key": "name"
     }
     res.json(encryption);
-    logger.info("Get a request to screen-recording-encryption from ",_id);
+    logger.info("RWS",worker_id,": Get a request to screen-recording-encryption from ",_id);
   }); 
 
-  app.delete('/internal-api/contact-centers/:ccid/screen-recordings/:rec_id/content/:mediafile.mp4', function (req, res){
+  app.delete('/internal-api/contact-centers/:ccid/screen-recordings/:rec_id/content/:mediafile.mp4', functions.auth, function (req, res){
     var _ccid = req.params.ccid;
     var _rec_id = req.params.rec_id;
     var _media_id = req.params.medianame;
     res.status(200).send("200 OK!");
-    logger.info("Delete media file "+_media_id+" from ccid "+_ccid+" media id "+_rec_id);
+    logger.info("RWS",worker_id,": Delete media file "+_media_id+" from ccid "+_ccid+" media id "+_rec_id);
   });
 //}
 

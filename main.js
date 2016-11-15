@@ -1,3 +1,4 @@
+var express = require('express');
 var rws = require('./router/rws_router.js');
 var rcs = require('./router/rcs_router.js');
 var mongo = require('./router/mongodbConnection.js');
@@ -45,7 +46,9 @@ var screenPost = new Schema({
 
 var insertPost = new Schema({
     id: String,
-    mediaFiles:[]
+    mediaFiles:[],
+    startTime:[],
+    stopTime:[]
 });
 
 global.caseModel = connection.model('LoadTest', casePost);
@@ -91,21 +94,30 @@ if (cluster.isMaster) {
     });
 }else{
     logger.info("Worker ",cluster.worker.id,"is running");
-    global.workers=cluster;
-    var mongo_listener = mongo.listen(8083, function (err){
+    global.worker_id=cluster.worker.id;
+    var mongo_listener = mongo.listen(8083, 'localhost', function (err){
+        mongo.use(express.static(__dirname + '/public'));
+        console.log(__dirname + '/public');
         if (err){
-            console.error(err);
+            logger.error(err);
         }
-        var rws_listener = rws.listen(8081, function (err){
+        var rws_listener = rws.listen(8081, 'localhost', function (err){
         if (err){
-           console.error(err);
+           logger.error(err);
         } 
-        global.rws_port = rws_listener.address().port;
+        else{
+            global.rws_port = rws_listener.address().port;
+            logger.info("RWS %d: listening at http://%s:%s",worker_id,rws_listener.address().address,rws_listener.address().port);
+        }
+        
         });
-        var rcs_listener = rcs.listen(8082, function (err){
+        var rcs_listener = rcs.listen(8082, 'localhost', function (err){
             if (err){
-               console.error(err);
+               logger.error(err);
             } 
+            else{
+                logger.info("RCS %d: listening at http://%s:%s",worker_id,rcs_listener.address().address,rcs_listener.address().port);
+            }
         });
     });
 }

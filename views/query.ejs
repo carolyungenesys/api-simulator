@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>QUERY RESULT</title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width">
+	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+</head>
+
+<body>
+	<ul>
+	  <li><a class="active" href="#home">Search</a></li>
+	  <li><a href="#news">Details</a></li>
+	  <li><a href="#contact">Contact</a></li>
+	  <li><a href="#about">About</a></li>
+	</ul>
+	<h2 style="margin: 30px 0 0 150px;">SEARCH</h2>
+	<div align="center">
+	<form action="">
+		<label>ID:</label> &nbsp;
+		<input type="text" name="id" value="">
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<label>Start Time:</label> &nbsp;
+		<input type="text" name="startTime" value="">
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<label>Stop Time:</label> &nbsp;
+		<input type="text" name="stopTime" value="">
+		&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="submit" value="Submit" style="font-weight: bold; font-size: 18px;">
+	</form>
+	</div>
+	<br><br>
+	<h2 style="margin: 30px 0 0 150px;">RESULTS</h2>
+	<% for(var i=0; i<id.length; i++) { %>
+		<ol>
+		<div class="table-title">
+			<h3><strong>ID:</strong>&nbsp;&nbsp;&nbsp;&nbsp;<%= id[i]%></h3>
+		</div>
+		<table style="width: 80%" align="center">
+			<tr>
+				<th>Media Id</th>
+				<th>Start Time</th>
+				<th>Stop Time</th>
+	    		<th>Type</th>
+	    		<th>Size</th> 
+	    		<th>Media Descriptor</th>
+	    		<th>Parameters</th>
+	    		<th>Duration</th>
+	  		</tr>
+	  		<% for(var j=0; j<mediaid[i].length; j++) { %>
+	  			<tr>
+	  				<td><%= mediaid[i][j]%></td>
+	  				<td><%= start[i][j]%></td>
+	  				<td><%= stop[i][j]%></td>
+	  				<td><%= type[i][j]%></td>
+	  				<td><%= size[i][j]%></td>
+	  				<td><a href="/mongodb/insert_recording/details/<%= id[i]%>/<%= mediaid[i][j]%>">Details</a></td>
+	  				<td><a href="/mongodb/insert_recording/details/<%= id[i]%>/<%= mediaid[i][j]%>">Details</a></td>
+	  				<td><%= duration[i][j]%></td>
+	  			</tr>
+	  		<% } %>
+		</table>
+		<br>
+		</ol>
+	<% } %>
+</body>
+</html>

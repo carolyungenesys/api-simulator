@@ -1,0 +1,10 @@
+$("#hide").click(function(){
+    $("#mp4").hide();
+    $("#hide").hide();
+    $("#show").show();
+});
+$("#show").click(function(){
+    $("#mp4").show();
+    $("#hide").show();
+    $("#show").hide();
+});

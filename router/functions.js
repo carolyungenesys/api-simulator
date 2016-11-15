@@ -3,33 +3,43 @@ var express = require('express');
 var fs=require('fs');
 var app = express();
 var uuid = require('uuid');
-/*
-exports.getCaseIndex = function getCaseIndex(case_id){
-  for (var i=0; i<config.length; i++){
-    if (case_id == config[i]['case_id']){
-      return i;
-      break;
-    }
-  }
-  return null;
-}
+var basicAuth = require('basic-auth');
 
-exports.getMediaIndex = function getMediaIndex(index,media_id,type){
-  for (var i=0; i<config[index][type].length; i++){
-    if (media_id == config[index][type][i]['mediaID']){
-      return i;
-      break;
-    }
-  }
-  return null;
-}
-*/
+exports.auth = function (req, res, next) {
+  function unauthorized(res) {
+    res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+    return res.send(401);
+  };
+
+  var user = basicAuth(req);
+
+  if (!user || !user.name || !user.pass) {
+    return unauthorized(res);
+  };
+
+  if (user.name === 'usr' && user.pass === 'pw') {
+    return next();
+  } else {
+    return unauthorized(res);
+  };
+};
 
 exports.savePost = function(req, res){
+  var post = req.body;
+  var start;
+  var stop;
+  post['startTime']=[];
+  post['stopTime']=[];
+  for (var i=0; i<req.body['mediaFiles'].length; i++){
+    start = new Date(req.body['mediaFiles'][i]['startTime']);
+    stop = new Date(req.body['mediaFiles'][i]['stopTime']);
+    post['startTime'].push(start.getTime()/1000);
+    post['stopTime'].push(stop.getTime()/1000);
+  }
   insertModel.findOne({'id':req.body['id']}, function(err,obj){
     if (obj == null){
       logger.info('Create post metadata');
-      insertModel.create(req.body, function(err,result){
+      insertModel.create(post, function(err,result){
         if (err){
           console.error(err);
         }else{
@@ -41,7 +51,7 @@ exports.savePost = function(req, res){
       });
     }else{
       logger.info('Update post metadata');
-      insertModel.update({'_id':obj['_id']},req.body, function(err,result){
+      insertModel.update({'_id':obj['_id']},post, function(err,result){
         if (err){
           console.error(err);
         }else{
