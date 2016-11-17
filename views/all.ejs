@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width">
+	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+	<ul>
+		<li>
+			<a href="">
+				<i class="fa fa-user" style="color: white;"></i>
+				Login
+			</a>
+		</li>
+		<li class="dropdown">
+			<a href="/testcase/all/main" class="dropbtn">
+				<i class="fa fa-file" style="color: white;"></i>
+				Test Case
+			</a>
+			<div class="dropdown-content">
+				<% for(var i=0; i<testcases.length; i++) { %>
+					<a href="/testcase/specific/<%= testcases[i]%>"><%= testcases[i]%></a>
+				<% } %>
+			</div>
+		</li>
+		<li>
+			<a href="/testcase/media/search/">
+				<i class="fa fa-search" style="color: white;"></i>
+				Search
+			</a>
+		</li>
+		<a class="logo-wrapper" href="http://www.genesys.com/" style="bottom: -10px;">          
+			<img src="https://genesys.okta.com/bc/image/fileStoreRecord?id=fs0w87gz7aHBUJIDXRAD" class="logo" style="margin-top:10px;">          
+			<div class="logo-bottom-curve"></div>        
+		</a>
+	</ul>
+	
+	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; ">
+		<br><br>
+		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Test Case Summary</h2><br>
+		<hr><br>
+		<div style="display: inline; width: 30%; float: left; height:100vh;">
+			<% for(var i=0; i<testcases.length; i++) { %>
+				<div class="all">
+					<a href="<%= testcases[i]%>" style="color: white; text-decoration: none;"><%= testcases[i]%></a>
+				</div>
+			<% } %>
+		</div>
+		<div style="display: inline;">
+			<br>
+			<label style="margin: 10px 0 10px 120px; font-weight: bold;"><%= data['Summary']['Test case']%></label>
+			<div style="text-align: right;"><label style="margin-right: 250px;">
+				<a  href="/testcase/specific/<%= data['Summary']['Test case']%>" style="color: black;text-decoration: none;">
+				<i class="fa fa-info-circle"></i>Test Specific Info
+				</a>
+			</label>
+			</div><br>
+			<label style="margin: 10px 0 10px 120px;">Test&nbsp;Driver:&nbsp;<%= data['Summary']['Test Driver']%></label><br><br>
+			<label style="margin: 10px 0 10px 120px;">Test&nbsp;Machine:&nbsp;<%= data['Summary']['Test Machine']%></label><br><br>
+			<label style="margin: 10px 0 10px 120px;">Webdav:&nbsp;<%= data['Summary']['WebDav']%></label><br><br>
+			<label style="margin: 10px 0 10px 120px;">API&nbsp;Simulator:&nbsp;<%= data['Summary']['API_Simulator']%></label><br><br>
+			<label style="margin: 10px 0 10px 120px;">Voice&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Voice Recording Duration']%></label><br><br>
+			<label style="margin: 10px 0 10px 120px;">Screen&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Screen Recording Duration']%></label><br><br>
+			<label style="margin: 10px 0 10px 120px;">Encryption:&nbsp;<%= data['Summary']['Encryption']%></label><br><br>
+			<label style="margin: 10px 0 10px 120px;">Test&nbsp;Duration:&nbsp;<%= data['Summary']['Test Duration']%></label><br><br><br><br>
+	</div>
+	<script type="text/javascript" src="/js/script.js"></script>
+</body>
+</html>

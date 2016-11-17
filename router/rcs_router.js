@@ -2,12 +2,10 @@ var express = require('express');
 var fs=require('fs');
 var app = express();
 var path='media';
-//var cluster=require('cluster');
-var numCPUs=require('os').cpus().length;
-//var numCPUs=2;
 var winston = require('winston');
 var functions = require('./functions.js');
-
+var events = require('events');
+eventEmitter.emit('refresh');
   //This method provide service for GET /rcs/contact-centers/:ccid/user-recordings/:id/play/:medianame.mp3
   app.get('/rcs/contact-centers/:ccid/user-recordings/:id/play/:medianame.mp3.bin', functions.auth, function (req, res) {
     var _ccid = req.params.ccid;

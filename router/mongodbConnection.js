@@ -1,5 +1,5 @@
 var express = require('express');
-var app = express();
+var app = require('./plot.js');
 var fs=require('fs');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
@@ -129,141 +129,6 @@ app.post('/mongodb/update', function(req, res){
 	res.status(200).send('Update Mongodb Successfully!');
 });
 
-app.get('/mongodb/insert_recording/search/', function(req, res){
-	var tmp = {};
-	var start = req.query.startTime;
-	var stop = req.query.stopTime;
-	if (req.query.id != null && req.query.id != ""){
-		tmp['id'] = req.query.id;
-	}
-	var result = [];
-	insertModel.find(tmp, function(err, obj){
-		if (err){
-			console.error(err);
-		}
-		if (obj == null){
-			res.status(404).send('No recording found')
-		}else{
-			if (start != "" && stop == ""){
-				for (var i=0; i<obj.length; i++){
-					for (var j=0; j<obj[i]['startTime'].length; j++){
-						console.log(obj[i]['startTime'][j]+"\t"+start);
-						if (obj[i]['startTime'][j] >= start){
-							console.log('hahaha');
-							result.push(obj[i]);
-							break;
-						}
-					}
-				}
-			}else if (stop != "" && start == ""){
-				for (var i=0; i<obj.length; i++){
-					for (var j=0; j<obj[i]['stopTime'].length; j++){
-						if (obj[i]['stopTime'][j] <= stop){
-							result.push(obj[i]);
-							break;
-						}
-					}
-				}
-			}else if (stop != "" && start != ""){
-				for (var i=0; i<obj.length; i++){
-					for (var j=0; j<obj[i]['stopTime'].length; j++){
-						if (obj[i]['stopTime'][j] <= stop && obj[i]['startTime'][j] >= start){
-							result.push(obj[i]);
-							break;
-						}
-					}
-				}
-			}else {
-				for (var i=0; i<obj.length; i++){
-					result.push(obj[i]);
-				}
-			}
-			var _id = [];
-			var __mediaid = [];
-			var __start =[];
-			var __stop = [];
-			var __duration = [];
-			var __size = [];
-			var __type = [];
-			for (var i=0; i<result.length; i++){
-				_id.push(result[i]['id']);
-				var _mediaid = [];
-				var _start =[];
-				var _stop = [];
-				var _duration = [];
-				var _size = [];
-				var _type = [];
-				for (var j=0; j<result[i]['mediaFiles'].length; j++){
-					_mediaid.push(result[i]['mediaFiles'][j]['mediaId']);
-					_start.push(result[i]['mediaFiles'][j]['startTime']);
-					_stop.push(result[i]['mediaFiles'][j]['stopTime']);
-					_duration.push(result[i]['mediaFiles'][j]['duration']);
-					_size.push(result[i]['mediaFiles'][j]['size']);
-					_type.push(result[i]['mediaFiles'][j]['type']);
-				}
-				__mediaid.push(_mediaid);
-				__start.push(_start);
-				__stop.push(_stop);
-				__duration.push(_duration);
-				__size.push(_size);
-				__type.push(_type);
-			}
-			res.render('query.ejs', {
-				id: _id,
-				mediaid: __mediaid,
-				start: __start,
-				stop: __stop,
-				duration: __duration,
-				size: __size,
-				type: __type
-			});
-			//res.status(200).json(result);
-		}
-	}).limit(100);
-});
-
-app.get('/mongodb/insert_recording/details/:id/:media', function(req, res){
-	var id = req.params.id;
-	var mediaid  = req.params.media;
-	insertModel.findOne({'id':id}, function(err, obj){
-		if (err){
-			console.error(err);
-		}
-		if (obj == null){
-			res.status(404).send('No recording found')
-		}else{
-			var region;
-			var usr;
-			var mux;
-			var _path;
-			var storage;
-			var storagePath;
-			for (var i=0; i<obj['mediaFiles'].length; i++){
-				if (obj['mediaFiles'][i]['mediaId'] == mediaid){
-					region = obj['mediaFiles'][i]['parameters']['region'];
-					usr = obj['mediaFiles'][i]['parameters']['contact']['userName'];
-					mux = obj['mediaFiles'][i]['parameters']['muxed_mediaIds'];
-					_path = path.basename(obj['mediaFiles'][i]['mediaDescriptor']['path']);
-					storage = obj['mediaFiles'][i]['mediaDescriptor']['storage'];
-					storagePath = obj['mediaFiles'][i]['mediaDescriptor']['data']['storagePath'];
-				}
-			}
-
-			res.render('detail.ejs', {
-				id: id,
-				mediaid: mediaid,
-				region: region,
-				usr: usr,
-				mux: mux,
-				path: _path,
-				storage: storage,
-				storagePath: storagePath
-			});
-
-		}
-	});
-});
-
 app.get('/media/:media', function(req, res){
 	var media = req.params.media;
 	var file = "./media/"+media;
@@ -275,14 +140,14 @@ app.get('/media/:media', function(req, res){
 	    fs.stat(file, function(err, stats) {
 	      if (err) {
 	        if (err.code === 'ENOENT') {
-	        	console.log(404);
+	        	logger.error(404);
 	          return res.sendStatus(404);
 	        }
 	      res.end(err);
 	      }
 	      var range = req.headers.range;
 	      if (!range) {
-	      	console.log(416);
+	      		logger.error(416);
 	       return res.sendStatus(416);
 	      }
 	      var positions = range.replace(/bytes=/, "").split("-");
@@ -307,7 +172,7 @@ app.get('/media/:media', function(req, res){
 	    });
     })
     .catch(function(err) {
-        console.error(err);
+       	logger.error(err);
 	});
 });
 module.exports = app;

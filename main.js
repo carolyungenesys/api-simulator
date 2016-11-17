@@ -97,7 +97,6 @@ if (cluster.isMaster) {
     global.worker_id=cluster.worker.id;
     var mongo_listener = mongo.listen(8083, 'localhost', function (err){
         mongo.use(express.static(__dirname + '/public'));
-        console.log(__dirname + '/public');
         if (err){
             logger.error(err);
         }

@@ -4,67 +4,95 @@
 	<title>RESULT DETAILS</title>
 	<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0; width=device-width;">
 	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">	
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 </head>
 
 <body>
 	<ul>
-	  <li><a class="active" href="#home">Search</a></li>
-	  <li><a href="#news">Details</a></li>
-	  <li><a href="#contact">Contact</a></li>
-	  <li><a href="#about">About</a></li>
+		<li>
+			<a href="">
+				<i class="fa fa-user" style="color: white;"></i>
+				Login
+			</a>
+		</li>
+		<li class="dropdown">
+			<a href="/testcase/all/main" class="dropbtn">
+				<i class="fa fa-file" style="color: white;"></i>
+				Test Case
+			</a>
+			<div class="dropdown-content">
+				<% for(var i=0; i<testcases.length; i++) { %>
+					<a href="/testcase/specific/<%= testcases[i]%>"><%= testcases[i]%></a>
+				<% } %>
+			</div>
+		</li>
+		<li>
+			<a href="/testcase/media/search/">
+				<i class="fa fa-search" style="color: white;"></i>
+				Search
+			</a>
+		</li>
+		<a class="logo-wrapper" href="http://www.genesys.com/" style="bottom: -10px;">          
+			<img src="https://genesys.okta.com/bc/image/fileStoreRecord?id=fs0w87gz7aHBUJIDXRAD" class="logo" style="margin-top:10px;">          
+			<div class="logo-bottom-curve"></div>        
+		</a>
 	</ul>
-	<h2 style="margin: 30px 0 0 140px;">RESULT DETAILS</h2>
-	<br>
-	<div align="center">
-	<label>
-	<strong>Case ID:</strong>&nbsp;&nbsp;<%= id%>
-	<br>
-	<strong>Media ID:</strong>&nbsp;&nbsp;<%= mediaid%>
-	</label>
-	</div>
-	<div class="table-title">
-		<h3>Parameters</h3>
-	</div>
-	<table style="width: 80%" align="center">
-		<tr>
-			<th>Region</th>
-			<th>Contact</th>
-			<th>Muxed-media IDs</th>
-		</tr>
-		<tr>
-			<td><%= region%></td>
-			<td><strong>Username:</strong><br><%= usr%></td>
-			<td><%= mux%></td>
-		</tr>
-	</table>
-	<br><br>
-	<div class="table-title">
-		<h3>Media Descriptor</h3>
-	</div>
-	<table style="width: 80%" align="center">
-		<tr>
-			<th>Path</th>
-			<th>Storage</th>
-			<th>Data</th>
-			<th>Play</th>
-		</tr>
-		<tr>
-			<td><%= path%></td>
-			<td><%= storage%></td>
-			<td><strong>Storage Path:</strong><br><%= storagePath%></td>
-			<td>
-			<button id="hide" style="display: none;">Hide</button>
-			<button id="show">Show</button>
-			</td>
-		</tr>
-	</table>
-	<br>
-	<div id="mp4" align="center" style="display:none;">		
-		<video width="700" height="450" id="videoPlayer" controls="controls" >
-			<source src="http://localhost:8083/media/<%= path%>" type="video/mp4">
-		</video>
+	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px;">
+		<br><br>
+		<h2 style="margin: 60px 0 -10px 40px; display: inline;">Result Details</h2>
+		<hr>
+		<br>
+		<div align="center">
+			<label>
+				<strong>Case ID:</strong>&nbsp;&nbsp;<%= id%>
+				<br>
+				<strong>Media ID:</strong>&nbsp;&nbsp;<%= mediaid%>
+			</label>
+		</div>
+		<div class="table-title">
+			<h3>Parameters</h3>
+		</div>
+		<table style="width: 80%" align="center">
+			<tr>
+				<th>Region</th>
+				<th>Contact</th>
+				<th>Muxed-media IDs</th>
+			</tr>
+			<tr>
+				<td><%= region%></td>
+				<td><strong>Username:</strong><br><%= usr%></td>
+				<td><%= mux%></td>
+			</tr>
+		</table>
+		<br><br>
+		<div class="table-title">
+			<h3>Media Descriptor</h3>
+		</div>
+		<table style="width: 80%" align="center">
+			<tr>
+				<th>Path</th>
+				<th>Storage</th>
+				<th>Data</th>
+				<th>Play</th>
+			</tr>
+			<tr>
+				<td><%= path%></td>
+				<td><%= storage%></td>
+				<td><strong>Storage Path:</strong><br><%= storagePath%></td>
+				<td>
+					<button id="hide" style="display: none;">Hide</button>
+					<button id="show">Show</button>
+				</td>
+			</tr>
+		</table>
+		<br>
+		<div id="mp4" align="center" style="display:none;">		
+			<video width="700" height="450" id="videoPlayer" controls="controls" >
+				<source src="http://localhost:8083/media/<%= path%>" type="video/mp4">
+			</video>
+		</div>
 	</div>
 	<script type="text/javascript" src="/js/script.js"></script>
 </body>

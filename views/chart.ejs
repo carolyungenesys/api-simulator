@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width">
+	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.min.js"></script>
+</head>
+
+<body>
+	<ul>
+		<li>
+			<a href="">
+				<i class="fa fa-user" style="color: white;"></i>
+				Login
+			</a>
+		</li>
+		<li class="dropdown">
+			<a href="/testcase/all/main" class="dropbtn">
+				<i class="fa fa-file" style="color: white;"></i>
+				Test Case
+			</a>
+			<div class="dropdown-content">
+				<% for(var i=0; i<testcases.length; i++) { %>
+					<a href="/testcase/specific/<%= testcases[i]%>"><%= testcases[i]%></a>
+				<% } %>
+			</div>
+		</li>
+		<li>
+			<a href="/testcase/media/search/">
+				<i class="fa fa-search" style="color: white;"></i>
+				Search
+			</a>
+		</li>
+		<a class="logo-wrapper" href="http://www.genesys.com/" style="bottom: -10px;">          
+			<img src="https://genesys.okta.com/bc/image/fileStoreRecord?id=fs0w87gz7aHBUJIDXRAD" class="logo" style="margin-top:10px;">          
+			<div class="logo-bottom-curve"></div>        
+		</a>
+	</ul>
+	
+	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px;">
+		<br><br>
+		<h2 style="margin: 60px 0 -10px 40px; display: inline;"><%= testcase%></h2>
+		<br>
+		<label style="margin: 10px 0 20px 400px; display: inline;">
+			<a  href="/testcase/download/<%= testcase%>" style="color: black;text-decoration: none;">
+				Download CSV<i class="fa fa-cloud-download"></i>
+			</a>
+		</label>
+		<hr>
+		<div style="margin: 20px 0 10px 30px">
+			<label>Test&nbsp;Driver:&nbsp;<%= data['Summary']['Test Driver']%></label>&nbsp;
+			<label>Test&nbsp;Machine:&nbsp;<%= data['Summary']['Test Machine']%></label>&nbsp;
+			<label>Webdav:&nbsp;<%= data['Summary']['WebDav']%></label>&nbsp;
+			<label>API&nbsp;Simulator:&nbsp;<%= data['Summary']['API_Simulator']%></label>
+		</div>
+		<div style="margin: 10px 0 10px 30px">
+			<label>Voice&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Voice Recording Duration']%></label>&nbsp;
+			<label>Screen&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Screen Recording Duration']%></label>
+		</div>
+		<div style="margin: 10px 0 20px 30px">
+			<label>Encryption:&nbsp;<%= data['Summary']['Encryption']%></label>&nbsp;
+			<label>Test&nbsp;Duration:&nbsp;<%= data['Summary']['Test Duration']%></label>
+		</div>
+		<hr>
+		<br>
+
+	<% var count = 0;%>
+	<% for(var i in data) { %>
+		<% if (i!='Summary'){ %>
+			<div class="box">
+				<%= data[i]['display']%>
+			<% if (count == 0){ %>
+				<div style="display: none; float:right;" class="show" id="show_<%= i%>">
+					<i class="fa fa-arrow-circle-right" style="color: white;"></i>
+				</div>
+				<div style="display: inline; float:right;" class="hide" id="hide_<%= i%>">
+					<i class="fa fa-arrow-circle-down" style="color: white;"></i>
+				</div>
+			</div>
+				<div class="chart" id="<%= i%>_div">
+			<% } else { %>
+				<div style="display: inline; float:right;" class="show" id="show_<%= i%>">
+					<i class="fa fa-arrow-circle-right" style="color: white;"></i>
+				</div>
+				<div style="display: none; float:right;" class="hide" id="hide_<%= i%>">
+					<i class="fa fa-arrow-circle-down" style="color: white;"></i>
+				</div>
+			</div>
+				<div class="chart" style="display: none;" id="<%= i%>_div">
+			<% } %>
+				<% if (data[i]['result']=='FAIL'){ %>
+					<label>Result:&nbsp;<div style="display: inline; color: red;"><%= data[i]['result']%></div></label>
+				<% } else { %>
+					<label>Result:&nbsp;<div style="display: inline; color: green;"><%= data[i]['result']%></div></label>
+				<% } %>
+				<label>Max:&nbsp;<%= data[i]['max']%></label>
+				<label>Min:&nbsp;<%= data[i]['min']%></label>
+				<label>Average:&nbsp;<%= data[i]['average']%></label>
+				<label>95th&nbsp;Percentile:&nbsp;<%= data[i]['95_percentile']%></label>
+				<label>Upper&nbsp;Limit:&nbsp;<%= data[i]['upper_limit']%></label>
+				<label>Lower&nbsp;Limit:&nbsp;<%= data[i]['lower_limit']%></label>
+				<canvas id="<%= i%>"></canvas>
+			</div>
+			<% count++; %>
+		<% } %>
+	<% } %>
+	<script type="text/javascript" src="/js/chart.js"></script>
+	<script type="text/javascript" src="/js/script.js"></script>
+</body>
+</html>
