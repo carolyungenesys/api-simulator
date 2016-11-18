@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
 	<title></title>
@@ -50,9 +49,9 @@
 		</a>
 	</ul>
 	
-	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; ">
+	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; height:100vh;">
 		<br><br>
-		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Test Case Summary</h2><br>
+		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Test Case Logs</h2><br>
 		<hr><br>
 		<div style="display: inline; width: 30%; float: left; height:100vh;">
 			<% for(var i=0; i<testcases.length; i++) { %>
@@ -61,23 +60,11 @@
 				</div>
 			<% } %>
 		</div>
-		<div style="display: inline;">
+		<div style="display: inline; overflow:scroll; width: 68%; float:right; height:80vh;">
+			<label style="margin: 10px 0 10px 120px; font-weight: bold;"><%= testcase%></label>
 			<br>
-			<label style="margin: 10px 0 10px 120px; font-weight: bold;"><%= data['Summary']['Test case']%></label>
-			<div style="text-align: right;"><label style="margin-right: 250px;">
-				<a  href="/testcase/specific/<%= data['Summary']['Test case']%>" style="color: black;text-decoration: none;">
-				<i class="fa fa-info-circle"></i>Test Specific Info
-				</a>
-			</label>
-			</div><br>
-			<label style="margin: 10px 0 10px 120px;">Test&nbsp;Driver:&nbsp;<%= data['Summary']['Test Driver']%></label><br><br>
-			<label style="margin: 10px 0 10px 120px;">Test&nbsp;Machine:&nbsp;<%= data['Summary']['Test Machine']%></label><br><br>
-			<label style="margin: 10px 0 10px 120px;">Webdav:&nbsp;<%= data['Summary']['WebDav']%></label><br><br>
-			<label style="margin: 10px 0 10px 120px;">API&nbsp;Simulator:&nbsp;<%= data['Summary']['API_Simulator']%></label><br><br>
-			<label style="margin: 10px 0 10px 120px;">Voice&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Voice Recording Duration']%></label><br><br>
-			<label style="margin: 10px 0 10px 120px;">Screen&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Screen Recording Duration']%></label><br><br>
-			<label style="margin: 10px 0 10px 120px;">Encryption:&nbsp;<%= data['Summary']['Encryption']%></label><br><br>
-			<label style="margin: 10px 0 10px 120px;">Test&nbsp;Duration:&nbsp;<%= data['Summary']['Test Duration']%></label><br><br><br><br>
+			<pre><%= log%></pre>
+		</div>
 	</div>
 	<script type="text/javascript" src="/js/script.js"></script>
 </body>

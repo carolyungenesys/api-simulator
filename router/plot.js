@@ -111,7 +111,6 @@ app.get('/testcase/all/:testcase', function(req, res){
 			});
 		});
 	});
-	
 });
 
 //downlaod csv
@@ -279,5 +278,40 @@ app.get('/testcase/media/details/:id/:media', function(req, res){
 		});
 	});
 });
+
+
+//send to show log
+app.get('/testcase/logs/:testcase', function(req, res){
+	var testcases = [];
+	var testcase = req.params.testcase;
+	caseModel.find({}, function(err, obj){
+		if (err){
+			logger.error(err);
+		}
+		if (obj == null){
+			res.status(404).send('No recording found')
+		}else{
+			for (var i=0; i<obj.length; i++){
+				testcases.push(obj[i]['case_id']);
+			}
+		}
+		if (testcase == 'main'){
+			testcase = testcases[0];
+		}
+		fs.readFile('./public/logs/'+testcase+'.log', function(err, data){
+			if (err) throw err;
+			var log = data.toString();
+			res.render('logs.ejs',{
+				testcases: testcases,
+				testcase: testcase,
+				log: log
+			});
+		});
+	});
+});
+
+// app.get('*',function(req, res){
+// 	res.redirect('/testcase/all/main');
+// });
 
 module.exports = app;

@@ -44,7 +44,6 @@ app.get('/api/v2/ops/contact-centers/:ccid/recordings/:id/play/:medianame.mp3', 
  logger.info("RWS",worker_id,": Get a request to download file from ccid ",_ccid,", media id ",_rec_id," and media file ",_media_id+".mp3");
 });
 
-
 //get /internal-api/contact-centers/:ccid/screen-recordings/:id/content/:medianame.mp4, return mp4 file
 app.get('/internal-api/contact-centers/:ccid/screen-recordings/:id/content/:medianame.mp4', functions.auth, function (req, res) {
   var _ccid = req.params.ccid;
