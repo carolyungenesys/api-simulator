@@ -12,20 +12,20 @@
 	
 	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; height:100vh;">
 		<br><br>
-		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Test Case Logs</h2><br>
+		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Welcome, <%= user.username %></h2><br>
 		<hr><br>
 		<div style="display: inline; width: 30%; float: left; height:100vh;">
-			<% for(var i=0; i<testcases.length; i++) { %>
-				<div class="all">
-					<a href="<%= testcases[i]%>" style="color: white; text-decoration: none;"><%= testcases[i]%></a>
-				</div>
-			<% } %>
+			<div class="all">
+				<a href="/profile/info" style="color: white; text-decoration: none;">Info</a>
+			</div>
+			<div class="all">
+				<a href="/profile/scheduler" style="color: white; text-decoration: none;">Scheduler</a>
+			</div>
+			<div class="all">
+				<a href="/profile/logs" style="color: white; text-decoration: none;">Logs</a>
+			</div>
 		</div>
-		<div style="display: inline; overflow:scroll; width: 68%; float:right; height:80vh;">
-			<label style="margin: 10px 0 10px 120px; font-weight: bold;"><%= testcase%></label>
-			<br>
-			<pre><%= log%></pre>
-		</div>
+		<br>
 	</div>
 	<% include footer.ejs %>
 	<script type="text/javascript" src="/js/script.js"></script>

@@ -1,0 +1,33 @@
+<html>
+<head>
+	<title></title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width">
+	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+	<% include header.ejs %>
+	
+	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px">
+		<br><br>
+		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Login</h2><br>
+		<hr><br><br><br>
+        <form action="" method="post">
+            <div align="center">
+                <label>Username:&nbsp;</label>
+                <input type="text" name="username" value="" style="width:200px;" class="form-control"><br><br>
+                <label>Password:&nbsp;</label>
+                <input type="password" name="password" value="" style="width:200px;" class="form-control"><br><br>
+                <input type="submit" value="Login" style="font-weight: bold; font-size: 18px;">
+                <p>Don't have an account?
+                <a href="/signup">Signup</a> or go back to<a href="/"> home</a>.</p>
+            </div>
+        </form>
+        <br><br><br><br><br>
+	</div>
+	<% include footer.ejs %>
+	<script type="text/javascript" src="/js/script.js"></script>
+</body>
+</html>

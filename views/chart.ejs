@@ -10,46 +10,7 @@
 </head>
 
 <body>
-	<ul>
-		<li>
-			<a href="">
-				<i class="fa fa-user" style="color: white;"></i>
-				Login
-			</a>
-		</li>
-		<li>
-			<a href="/testcase/media/search/">
-				<i class="fa fa-search" style="color: white;"></i>
-				Search
-			</a>
-		</li>
-        <li class="dropdown">
-			<a href="/testcase/logs/main" class="dropbtn">
-				<i class="fa fa-file" style="color: white;"></i>
-				Logs
-			</a>
-			<div class="dropdown-content">
-				<% for(var i=0; i<testcases.length; i++) { %>
-					<a href="/testcase/logs/<%= testcases[i]%>"><%= testcases[i]%></a>
-				<% } %>
-			</div>
-		</li>
-		<li class="dropdown">
-			<a href="/testcase/all/main" class="dropbtn">
-				<i class="fa fa-folder" style="color: white;"></i>
-				Test Case
-			</a>
-			<div class="dropdown-content">
-				<% for(var i=0; i<testcases.length; i++) { %>
-					<a href="/testcase/specific/<%= testcases[i]%>"><%= testcases[i]%></a>
-				<% } %>
-			</div>
-		</li>
-		<a class="logo-wrapper" href="http://www.genesys.com/" style="bottom: -10px;">          
-			<img src="https://genesys.okta.com/bc/image/fileStoreRecord?id=fs0w87gz7aHBUJIDXRAD" class="logo" style="margin-top:10px;">          
-			<div class="logo-bottom-curve"></div>        
-		</a>
-	</ul>
+	<% include header.ejs %>
 	
 	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px;">
 		<br><br>
@@ -118,6 +79,9 @@
 			<% count++; %>
 		<% } %>
 	<% } %>
+	<br><br>
+	</div>
+	<% include footer.ejs %>
 	<script type="text/javascript" src="/js/chart.js"></script>
 	<script type="text/javascript" src="/js/script.js"></script>
 </body>

@@ -1,6 +1,7 @@
 var express = require('express');
 var fs=require('fs');
 var csv= require('csv');
+var user = require('./login.js');
 var app = express();
 var path = require('path');
 
@@ -12,6 +13,7 @@ function _arraytosting(_array){
 	return result;
 }
 
+app.use('/', user);
 //send to test specific info and chart
 app.get('/testcase/specific/:testcase', function(req, res){
 	var testcase = req.params.testcase;
@@ -310,8 +312,8 @@ app.get('/testcase/logs/:testcase', function(req, res){
 	});
 });
 
-// app.get('*',function(req, res){
-// 	res.redirect('/testcase/all/main');
-// });
+app.get('/',function(req, res){
+	res.redirect('/testcase/all/main');
+});
 
 module.exports = app;
