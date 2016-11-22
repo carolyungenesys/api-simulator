@@ -17,14 +17,6 @@ app.use('/', user);
 //send to test specific info and chart
 app.get('/testcase/specific/:testcase', function(req, res){
 	var testcase = req.params.testcase;
-	var time=[];
-	var cpu_in_percentage=[];
-	var handler_count=[];
-	var cpu_idle_time=[];
-	var network_interface_time=[];
-	var thread_count=[];
-	var private_bytes=[];
-	var iops=[];
 	var testcases = [];
 	caseModel.find({}, function(err,obj){
 		if (err){
@@ -37,51 +29,39 @@ app.get('/testcase/specific/:testcase', function(req, res){
 				testcases.push(obj[i]['case_id']);
 			}
 		}
-		fs.readFile('./public/data/'+testcase+'.csv', function(err,data){
-			csv.parse(data, function (err, data){
-				if (err){
-					logger.error(err);
-				}
-				for (var i=1; i<data.length; i++){
-					time.push('"'+data[i][0]+'"');
-					cpu_in_percentage.push(data[i][7]);
-					handler_count.push(data[i][8]);
-					cpu_idle_time.push(data[i][12]);
-					network_interface_time.push(data[i][6]);
-					thread_count.push(data[i][9]);
-					private_bytes.push(data[i][11]);
-					iops.push(data[i][29]);
-				}
-				fs.readFile('./public/js/chart_tmp.js', function(err,data){
-					data = data.toString();
-					if (err) {
-						throw err;
-					}
-					var result = data;
-					for (var i=0; i<7; i++){
-						result = result.replace('[label]', _arraytosting(time));
-					}
-					result = result.replace('[cpu_in_percentage]',_arraytosting(cpu_in_percentage));
-					result = result.replace('[handler_count]',_arraytosting(handler_count));
-					result = result.replace('[cpu_idle_time]',_arraytosting(cpu_idle_time));
-					result = result.replace('[network_interface_time]',_arraytosting(network_interface_time));
-					result = result.replace('[thread_count]',_arraytosting(thread_count));
-					result = result.replace('[private_bytes]',_arraytosting(private_bytes));
-					result = result.replace('[iops]',_arraytosting(iops));
-					fs.writeFile('./public/js/chart.js',result, (err) => {
-						if (err) throw err;
-						fs.readFile('./public/data/'+testcase+'_report.json', function(err, data){
-							if (err) throw err;
-							data = JSON.parse(data);
-							res.render('chart.ejs', {
-								testcases: testcases,
-								testcase: testcase,
-								data: data
-							});
-						});
-					});
-				});
+		fs.readFile('./public/data/'+testcase+'_report.json', function(err, data){
+			if (err) throw err;
+			data = JSON.parse(data);
+			var result = 'PASS';
+			for(var key in data){
+			    if (data[key]['result']=='FAIL'){
+			    	result ='FAIL';
+			    }
+			}
+			res.render('chart.ejs', {
+				testcases: testcases,
+				testcase: testcase,
+				data: data,
+				result: result
 			});
+		});
+	});
+});
+
+app.get('/testcase/chart/:testcase/:element', function(req, res){
+	var testcase = req.params.testcase;
+	var element = req.params.element;
+	var result = [];
+	fs.readFile('./public/data/'+testcase+'.csv', function(err,data){
+		csv.parse(data, function (err, data){
+			if (err){
+				logger.error(err);
+			}
+			for (var i=1; i<data.length; i++){
+				result.push(data[i][element]);
+			}
+			result = result.toString();
+			res.status(200).send(result);
 		});
 	});
 });

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title><%= testcase%></title>
 	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width">
 	<link rel="stylesheet" type="text/css" href="/css/style.css" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">	
@@ -14,8 +14,7 @@
 	
 	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px;">
 		<br><br>
-		<h2 style="margin: 60px 0 -10px 40px; display: inline;"><%= testcase%></h2>
-		<br>
+		<h2 style="margin: 60px 0 -10px 40px; display: inline;"><%= result%>:&nbsp;<%= testcase%></h2><br>
 		<label style="margin: 10px 0 20px 400px; display: inline;">
 			<a  href="/testcase/download/<%= testcase%>" style="color: black;text-decoration: none;">
 				Download CSV<i class="fa fa-cloud-download"></i>
@@ -32,16 +31,24 @@
 			<label>Voice&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Voice Recording Duration']%></label>&nbsp;
 			<label>Screen&nbsp;Recording&nbsp;Duration:&nbsp;<%= data['Summary']['Screen Recording Duration']%></label>
 		</div>
-		<div style="margin: 10px 0 20px 30px">
+		<div style="margin: 10px 0 10px 30px">
 			<label>Encryption:&nbsp;<%= data['Summary']['Encryption']%></label>&nbsp;
 			<label>Test&nbsp;Duration:&nbsp;<%= data['Summary']['Test Duration']%></label>
+		</div><br>
+		<div style="margin: 10px 0 10px 30px">
+			<label><strong>Memory Leak</strong></label>
+		</div>
+		<div style="margin: 10px 0 20px 30px">
+			<label>Certainty:&nbsp;<%= data['memory_leak']['certainty']%></label>&nbsp;
+			<label>mRatio:&nbsp;<%= data['memory_leak']['mRatio']%></label>
+			<label>slopeSum:&nbsp;<%= data['memory_leak']['slopeSum']%></label>
 		</div>
 		<hr>
 		<br>
 
 	<% var count = 0;%>
 	<% for(var i in data) { %>
-		<% if (i!='Summary'){ %>
+		<% if (i!='Summary' && i!='memory_leak'){ %>
 			<div class="box">
 				<%= data[i]['display']%>
 			<% if (count == 0){ %>
@@ -74,7 +81,7 @@
 				<label>95th&nbsp;Percentile:&nbsp;<%= data[i]['95_percentile']%></label>
 				<label>Upper&nbsp;Limit:&nbsp;<%= data[i]['upper_limit']%></label>
 				<label>Lower&nbsp;Limit:&nbsp;<%= data[i]['lower_limit']%></label>
-				<canvas id="<%= i%>"></canvas>
+				<canvas id="<%= i%>" class="plot" col="<%= data[i]['col']%>"></canvas>
 			</div>
 			<% count++; %>
 		<% } %>
@@ -82,7 +89,7 @@
 	<br><br>
 	</div>
 	<% include footer.ejs %>
-	<script type="text/javascript" src="/js/chart.js"></script>
+	<script type="text/javascript" src="/js/chart_tmp.js"></script>
 	<script type="text/javascript" src="/js/script.js"></script>
 </body>
 </html>

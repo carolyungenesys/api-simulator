@@ -11,7 +11,7 @@
 <body>
 	<% include header.ejs %>
 	
-	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; ">
+	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; height:100vh;">
 		<br><br>
 		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Test Case Summary</h2><br>
 		<hr><br>
@@ -25,9 +25,9 @@
 		<div style="display: inline;">
 			<br>
 			<label style="margin: 10px 0 10px 120px; font-weight: bold;"><%= data['Summary']['Test case']%></label>
-			<div style="text-align: right;"><label style="margin-right: 250px;">
+			<div style="text-align: right;"><label style="margin-right: 350px;">
 				<a  href="/testcase/specific/<%= data['Summary']['Test case']%>" style="color: black;text-decoration: none;">
-				<i class="fa fa-info-circle"></i>Test Specific Info
+				<i class="fa fa-info-circle"></i>Details
 				</a>
 			</label>
 			</div><br>

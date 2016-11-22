@@ -178,6 +178,16 @@ label {
   margin: 10px;
 }
 
+textarea{
+  color:#1b1e24;;
+  font-size:18px;
+  font-weight: normal;
+  font-family: Akzidenz,"Helvetica Neue",Helvetica,Arial,sans-serif; 
+  margin: 20px 0 -20px 20px;
+  width: 500px;
+  height: 50px;
+}
+
 .table-fill {
   background: white;
   border-radius:3px;

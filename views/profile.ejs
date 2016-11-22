@@ -12,20 +12,70 @@
 	
 	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; height:100vh;">
 		<br><br>
-		<h2 style="margin: 60px 0 -10px 40px;display: inline;">Welcome, <%= user.username %></h2><br>
-		<hr><br>
-		<div style="display: inline; width: 30%; float: left; height:100vh;">
-			<div class="all">
+		<h2 style="margin: 60px 0 -10px 40px;display: inline;">User Profile</h2>
+		<div style="display: inline; float:right; margin-right: 100px; margin-bottom: 0;">
+			<div class="all" style="display: inline;">
 				<a href="/profile/info" style="color: white; text-decoration: none;">Info</a>
 			</div>
-			<div class="all">
+			<div class="all" style="display: inline;">
 				<a href="/profile/scheduler" style="color: white; text-decoration: none;">Scheduler</a>
 			</div>
-			<div class="all">
-				<a href="/profile/logs" style="color: white; text-decoration: none;">Logs</a>
+			<div class="all" style="display: inline;">
+				<a href="/profile/logs/list" style="color: white; text-decoration: none;">Logs</a>
 			</div>
 		</div>
-		<br>
+		<hr>
+	<div>
+		<% if (type == 'info') { %>
+			<div style="margin: 20px 0 -10px 40px;">
+				<h2>User Infomation</h2><br>
+				<label><strong>Username: </strong></label><%= user.username%>
+				<a href="/profile/changepassword" style="color: black; text-decoration: none; padding-left: 80px;"><i class="fa fa-pencil"></i>Change Password</a><br><br><br>
+				<label><strong>Scheduled Test Cases</strong></label><br><br>
+				<table style="width:90%;" align="center">
+					<tr>
+						<th>Start Time</th>
+						<th>Pre-Script</th>
+						<th>Run-test Command</th>
+						<th>Post-Script</th>
+						<th>Log File</th>
+					</tr>
+					<% for (var i=0; i<startTime.length; i++) { %>
+					<tr>
+						<td><%= startTime[i]%></td>
+						<td><%= preScript[i]%></td>
+						<td><%= command[i]%></td>
+						<td><%= postScript[i]%></td>
+						<td><a href="/profile/logs/<%= log[i]%>"" style="color: black;" ><%= log[i]%></a></td>
+					</tr>
+					<% } %>
+				</table><br><br>
+				<label><strong>Role</strong></label><br><br><br>
+			</div>
+		<% } else if (type == 'scheduler') { %>
+			<div style="margin: 20px 0 -10px 140px;">
+				<h2>Schedule Test</h2><br>
+				<form action="" method="post">
+				<label><strong>Start Time: </strong></label><input type="datetime-local" name="startTime" style="width: 300px;"><br><br>
+				<label><strong>Pre-Script: </strong></label><textarea name="preScript" col="40" row="5"></textarea><br><br><br>
+				<label><strong>Run-test Command: </strong></label><textarea name="command" col="40" row="5"></textarea><br><br><br>
+				<label><strong>Post-Script: </strong></label><textarea name="postScript" col="40" row="5"></textarea><br><br><br>
+				<label><strong>Log File: </strong></label><input type="text" name="log" style="width: 500px;"><br><br><br>
+				<input type="submit" name="sumbit" value="Schedule">
+				</form>
+			</div>
+
+		<% } else if (type == 'logs') {%>
+			<div style="margin: 20px 0 -10px 40px;">
+				<h2>Log History</h2><br>
+				<label><strong>Log File: </strong><%= logfile%></label>
+				<div style="display: inline; overflow-x:hidden;word-break:break-all; word-wrap: break-word; width: 250px; height:80vh;float: center;">
+					<pre><%= log%></pre>
+				</div>
+			</div>
+
+		<% } %>
+		</div>
 	</div>
 	<% include footer.ejs %>
 	<script type="text/javascript" src="/js/script.js"></script>
