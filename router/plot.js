@@ -14,36 +14,52 @@ function _arraytosting(_array){
 }
 
 app.use('/', user);
-//send to test specific info and chart
+
 app.get('/testcase/specific/:testcase', function(req, res){
 	var testcase = req.params.testcase;
 	var testcases = [];
+	if (req.user == "" || req.user == null){
+		user = 'Login';
+	}else{
+		user = req.user.username;
+	}
 	caseModel.find({}, function(err,obj){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
 			}
 		}
 		fs.readFile('./public/data/'+testcase+'_report.json', function(err, data){
-			if (err) throw err;
-			data = JSON.parse(data);
-			var result = 'PASS';
-			for(var key in data){
-			    if (data[key]['result']=='FAIL'){
-			    	result ='FAIL';
-			    }
+			if (err) {
+				logger.error(err);
+				res.render('error.ejs',{
+					user: user,
+					testcases: testcases,
+					code: '404',
+					msg: "Can't find test report.json." 
+				});
+			}else{
+				data = JSON.parse(data);
+				var result = 'PASS';
+				for(var key in data){
+				    if (data[key]['result']=='FAIL'){
+				    	result ='FAIL';
+				    }
+				}
+				res.render('chart.ejs', {
+					user: user,
+					testcases: testcases,
+					testcase: testcase,
+					data: data,
+					result: result
+				});
 			}
-			res.render('chart.ejs', {
-				testcases: testcases,
-				testcase: testcase,
-				data: data,
-				result: result
-			});
 		});
 	});
 });
@@ -52,17 +68,39 @@ app.get('/testcase/chart/:testcase/:element', function(req, res){
 	var testcase = req.params.testcase;
 	var element = req.params.element;
 	var result = [];
+	if (req.user == "" || req.user == null){
+		user = 'Login';
+	}else{
+		user = req.user.username;
+	}
 	fs.readFile('./public/data/'+testcase+'.csv', function(err,data){
-		csv.parse(data, function (err, data){
-			if (err){
-				logger.error(err);
-			}
-			for (var i=1; i<data.length; i++){
-				result.push(data[i][element]);
-			}
-			result = result.toString();
-			res.status(200).send(result);
-		});
+		if (err){
+			logger.error(err);
+			res.render('error.ejs',{
+				user: user,
+				testcases: testcases,
+				code: '404',
+				msg: "Can't find test data.csv." 
+			});
+		}else{
+			csv.parse(data, function (err, data){
+				if (err){
+					logger.error(err);
+					res.render('error.ejs',{
+						user: user,
+						testcases: testcases,
+						code: '400',
+						msg: "Invalid test data.csv." 
+					});
+				}else{
+					for (var i=1; i<data.length; i++){
+						result.push(data[i][element]);
+					}
+					result = result.toString();
+					res.status(200).send(result);
+				}
+			});
+		}
 	});
 });
 
@@ -70,12 +108,18 @@ app.get('/testcase/chart/:testcase/:element', function(req, res){
 app.get('/testcase/all/:testcase', function(req, res){
 	var testcases = [];
 	var testcase = req.params.testcase;
+	if (req.user == "" || req.user == null){
+		user = 'Login';
+	}else{
+		user = req.user.username;
+	}
 	caseModel.find({}, function(err, obj){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
@@ -85,12 +129,22 @@ app.get('/testcase/all/:testcase', function(req, res){
 			testcase = testcases[0];
 		}
 		fs.readFile('./public/data/'+testcase+'_report.json', function(err, data){
-			if (err) throw err;
-			data = JSON.parse(data);
-			res.render('all.ejs',{
-				testcases: testcases,
-				data: data
-			});
+			if (err) {
+				logger.error(err);
+				res.render('error.ejs',{
+					user: user,
+					testcases: testcases,
+					code: '404',
+					msg: "Can't find test report.json." 
+				});
+			}else {
+				data = JSON.parse(data);
+				res.render('all.ejs',{
+					user: user,
+					testcases: testcases,
+					data: data
+				});
+			}
 		});
 	});
 });
@@ -106,6 +160,11 @@ app.get('/testcase/media/search/', function(req, res){
 	var tmp = {};
 	var start = req.query.startTime;
 	var stop = req.query.stopTime;
+	if (req.user == "" || req.user == null){
+		user = 'Login';
+	}else{
+		user = req.user.username;
+	}
 	if (req.query.id != null && req.query.id != ""){
 		tmp['id'] = req.query.id;
 	}
@@ -115,8 +174,9 @@ app.get('/testcase/media/search/', function(req, res){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
@@ -126,8 +186,8 @@ app.get('/testcase/media/search/', function(req, res){
 			if (err){
 				logger.error(err);
 			}
-			if (obj == null){
-				res.status(404).send('No recording found')
+			if (obj.length == 0){
+				res.status(404).send('No rec||ding found')
 			}else{
 				if (start != "" && stop == ""){
 					for (var i=0; i<obj.length; i++){
@@ -192,6 +252,7 @@ app.get('/testcase/media/search/', function(req, res){
 					__type.push(_type);
 				}
 				res.render('query.ejs', {
+					user: user,
 					testcases: testcases,
 					id: _id,
 					mediaid: __mediaid,
@@ -211,12 +272,18 @@ app.get('/testcase/media/details/:id/:media', function(req, res){
 	var id = req.params.id;
 	var mediaid  = req.params.media;
 	var testcases = [];
+	if (req.user == "" || req.user == null){
+		user = 'Login';
+	}else{
+		user = req.user.username;
+	}
 	caseModel.find({}, function(err,obj){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
@@ -226,8 +293,9 @@ app.get('/testcase/media/details/:id/:media', function(req, res){
 			if (err){
 				logger.error(err);
 			}
-			if (obj == null){
-				res.status(404).send('No recording found')
+			if (obj.length == 0){
+				logger.error(err);
+				res.status(404).send(new Buffer("<p>Can't find media file.</p>"));
 			}else{
 				var region;
 				var usr;
@@ -240,12 +308,13 @@ app.get('/testcase/media/details/:id/:media', function(req, res){
 						region = obj['mediaFiles'][i]['parameters']['region'];
 						usr = obj['mediaFiles'][i]['parameters']['contact']['userName'];
 						mux = obj['mediaFiles'][i]['parameters']['muxed_mediaIds'];
-						_path = path.basename(obj['mediaFiles'][i]['mediaDescriptor']['path']);
-						storage = obj['mediaFiles'][i]['mediaDescriptor']['storage'];
-						storagePath = obj['mediaFiles'][i]['mediaDescriptor']['data']['storagePath'];
+						_path = path.basename(obj['mediaFiles'][i]['mediaDescript||']['path']);
+						storage = obj['mediaFiles'][i]['mediaDescript||']['storage'];
+						storagePath = obj['mediaFiles'][i]['mediaDescript||']['data']['storagePath'];
 					}
 				}
 				res.render('detail.ejs', {
+					user: user,
 					testcases: testcases,
 					id: id,
 					mediaid: mediaid,
@@ -266,12 +335,18 @@ app.get('/testcase/media/details/:id/:media', function(req, res){
 app.get('/testcase/logs/:testcase', function(req, res){
 	var testcases = [];
 	var testcase = req.params.testcase;
+	if (req.user == "" || req.user == null){
+		user = 'Login';
+	}else{
+		user = req.user.username;
+	}
 	caseModel.find({}, function(err, obj){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
@@ -281,13 +356,24 @@ app.get('/testcase/logs/:testcase', function(req, res){
 			testcase = testcases[0];
 		}
 		fs.readFile('./public/logs/'+testcase+'.log', function(err, data){
-			if (err) throw err;
-			var log = data.toString();
-			res.render('logs.ejs',{
-				testcases: testcases,
-				testcase: testcase,
-				log: log
-			});
+			if (err){
+				logger.error(err);
+				res.render('error.ejs',{
+					user: user,
+					testcases: testcases,
+					code: '404',
+					msg: "Can't find log file." 
+				});
+			}else{
+				var log = data.toString();
+				res.render('logs.ejs',{
+					user: user,
+					testcases: testcases,
+					testcase: testcase,
+					log: log
+				});
+			}
+
 		});
 	});
 });

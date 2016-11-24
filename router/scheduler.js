@@ -6,7 +6,8 @@ var historyPost = new Schema({
     preScript: String,
     command: String,
     postScript: String,
-    log: String
+    log: String,
+    status: String
 });
 
 module.exports = mongoose.model('History', historyPost);

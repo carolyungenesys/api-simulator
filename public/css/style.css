@@ -6,6 +6,55 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Popup container - can be anything you want */
+.popup {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* The actual popup */
+.popup .popuptext {
+    width: 250px;
+    background-color: #aaa;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -80px;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #aaa transparent transparent transparent;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}
+
 ul {
   list-style-type: none;
   margin: -10px;
@@ -252,6 +301,7 @@ tr:last-child td:last-child {
 }
 
 td {
+  word-wrap: break-word;
   background:#ddd;
   padding:14px;
   text-align:left;
@@ -287,4 +337,71 @@ td.text-center {
 
 td.text-right {
   text-align: right;
+}
+
+div.logs {
+  width: 250px;
+  margin: 20px 30px 20px 40px;
+  display: inline;
+  float: left;
+}
+ 
+h2.logs {
+  margin: 0;
+  padding: 0;
+}
+ 
+ul.logs {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+ 
+li.logs {
+  width:250px;
+  background-color: #ddd;
+  border-bottom: 1px solid #888;
+  padding: 0 8px;
+}
+ 
+li.logs:last-child {
+  border: none;
+}
+ 
+li.logs a {
+  text-decoration: none;
+  color: #000;
+  display: block;
+  width: 250px;
+  -webkit-transition: font-size 0.3s ease, background-color 0.3s ease;
+  -moz-transition: font-size 0.3s ease, background-color 0.3s ease;
+  -o-transition: font-size 0.3s ease, background-color 0.3s ease;
+  -ms-transition: font-size 0.3s ease, background-color 0.3s ease;
+  transition: font-size 0.3s ease, background-color 0.3s ease;
+}
+ 
+li.logs a:hover {
+  font-size: 24px;
+  background: #b5121b;
+}
+
+div.error {
+  width: 84%;
+  height: 300px;
+  text-align: center;
+  background-image: url(http://www.genesys.com/images/headers/page-header_lightpoly.jpg);
+  float:center;
+  position: absolute;
+  top:300px;
+}
+
+div.clock{
+  text-align: center; 
+  float: right; 
+  margin-right: 80px; 
+  margin-top: 30px; 
+  border:2px dashed #aaa;
+  padding:20px;
+  background-color: #ddd;
+  box-shadow: 2px 2px 1px #888888;
 }

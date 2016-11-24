@@ -7,13 +7,13 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 
-<body>
+<body onload="startTime()">
 	<% include header.ejs %>
 	
 	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; height:100vh;">
 		<br><br>
 		<h2 style="margin: 60px 0 -10px 40px;display: inline;">User Profile</h2>
-		<div style="display: inline; float:right; margin-right: 100px; margin-bottom: 0;">
+		<div style="display: inline; float:right; margin-right: 10px; margin-bottom: 0;">
 			<div class="all" style="display: inline;">
 				<a href="/profile/info" style="color: white; text-decoration: none;">Info</a>
 			</div>
@@ -23,37 +23,58 @@
 			<div class="all" style="display: inline;">
 				<a href="/profile/logs/list" style="color: white; text-decoration: none;">Logs</a>
 			</div>
+			<div class="all" style="display: inline;">
+				<a href="/logout" style="color: white; text-decoration: none;">Logout</a>
+			</div>
 		</div>
 		<hr>
 	<div>
 		<% if (type == 'info') { %>
 			<div style="margin: 20px 0 -10px 40px;">
 				<h2>User Infomation</h2><br>
-				<label><strong>Username: </strong></label><%= user.username%>
-				<a href="/profile/changepassword" style="color: black; text-decoration: none; padding-left: 80px;"><i class="fa fa-pencil"></i>Change Password</a><br><br><br>
+				<label><strong>Username: </strong><%= user%></label>
+				<div class="popup">
+					<div id="click"><i class="fa fa-pencil"></i>Change Password</div>
+					<form action="/profile/changepassword" method="post" class="popuptext" id="myPopup" hidden>
+						<label><strong>New Password: </strong></label>
+						<input type="password" style="width:200px;" name="newpwd">
+						<input type="submit" name="sumbit" value="Submit">
+						<i id="click2" class="fa  fa-minus-square"></i>
+					</form>
+				</div><br><br>
 				<label><strong>Scheduled Test Cases</strong></label><br><br>
-				<table style="width:90%;" align="center">
+				<table style="width:90%;table-layout: fixed;" align="center">
 					<tr>
 						<th>Start Time</th>
 						<th>Pre-Script</th>
 						<th>Run-test Command</th>
 						<th>Post-Script</th>
 						<th>Log File</th>
+						<th>Status</th>
 					</tr>
-					<% for (var i=0; i<startTime.length; i++) { %>
+					<% for (var i=startTime.length-1; i>=0; i--) { %>
 					<tr>
 						<td><%= startTime[i]%></td>
 						<td><%= preScript[i]%></td>
 						<td><%= command[i]%></td>
 						<td><%= postScript[i]%></td>
-						<td><a href="/profile/logs/<%= log[i]%>"" style="color: black;" ><%= log[i]%></a></td>
+						<% if (status[i]=='BUILD SUCCESS'){ %>
+							<td><a href="/profile/logs/<%= log[i]%>"" style="color: black;"><%= log[i]%></a></td>
+						<% }else{ %>
+							<td><%= log[i]%></td>
+						<% } %>
+						<td><%= status[i]%></td>
 					</tr>
 					<% } %>
 				</table><br><br>
-				<label><strong>Role</strong></label><br><br><br>
+				<!-- <label><strong>Role</strong></label><br><br><br> -->
 			</div>
 		<% } else if (type == 'scheduler') { %>
 			<div style="margin: 20px 0 -10px 140px;">
+				<div class="clock">
+					<label>Now at UTC: </label><br>
+					<div style="margin-top: 10px;font-family:'digital-clock-font';" id="txt"></div>
+				</div>
 				<h2>Schedule Test</h2><br>
 				<form action="" method="post">
 				<label><strong>Start Time: </strong></label><input type="datetime-local" name="startTime" style="width: 300px;"><br><br>
@@ -66,18 +87,25 @@
 			</div>
 
 		<% } else if (type == 'logs') {%>
-			<div style="margin: 20px 0 -10px 40px;">
-				<h2>Log History</h2><br>
-				<label><strong>Log File: </strong><%= logfile%></label>
-				<div style="display: inline; overflow-x:hidden;word-break:break-all; word-wrap: break-word; width: 250px; height:80vh;float: center;">
-					<pre><%= log%></pre>
+			<div class="logs">
+			<h2>Log History</h2><br>
+					<ul class="logs">
+						<% for (var i=0; i<logs.length; i++){ %>
+						<li class="logs"><a href='/profile/logs/<%= logs[i]%>'><%= logs[i]%></a></li>
+						<% } %>
+					</ul>
 				</div>
 			</div>
-
+			<div style="display: inline; overflow:scroll; width: 68%; float:right; height:85vh; margin-right: 40px;"><br><br>
+				<label style="margin: 10px 0 10px 120px;"><strong>Log Path: </strong><%= logfile%></label>
+				<br>
+				<pre><%= log%></pre>
+			</div>
 		<% } %>
 		</div>
 	</div>
 	<% include footer.ejs %>
 	<script type="text/javascript" src="/js/script.js"></script>
+	<script type="text/javascript" src="/js/clock.js"></script>
 </body>
 </html>

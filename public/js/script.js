@@ -20,3 +20,9 @@ $(".show").click(function(){
     $("#hide_"+id).show();
     $("#show_"+id).hide();
 });
+$("#click").click(function(){
+    $("#myPopup").show();
+});
+$("#click2").click(function(){
+    $("#myPopup").hide();
+});

@@ -10,14 +10,14 @@ var LocalStrategy = require('passport-local').Strategy;
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 var bcrypt = require('bcrypt-nodejs');
+var exec = require('child_process').exec;
 
-//session secret
 router.use(require('express-session')({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: false
 }));
-//flash warning
+
 router.use(flash());
 router.use(function(req, res, next) {
 	res.locals.currentUser = req.user;
@@ -25,14 +25,14 @@ router.use(function(req, res, next) {
 	res.locals.infos = req.flash("info");
 	next();
 }); 
-//init passport authentication
+
 router.use(passport.initialize());
-//presistent login sessions
 router.use(passport.session());
+
 passport.serializeUser(function(User, done) {
 	done(null, User._id);
 });
-// deserialize user
+
 passport.deserializeUser(function(id, done) {
 	User.findById(id, function(err, User) {
 		done(err, User);
@@ -43,13 +43,14 @@ passport.use("local-login",new LocalStrategy(function(username, password, callba
 	User.findOne({username: username}, function(err, user) {
 		if (err) { return callback(err); }
 		if (!user) {
-			console.log("can't find user");
+			logger.info("USER: can't find user "+user['username']);
 			return callback(null, false);
 		}
 		if (!user.validPassword(password)) {
-			console.log("wrong password");
-		return callback(null, false);
+			logger.info("USER: "+user['username']+" wrong password");
+			return callback(null, false);
 		}
+		logger.info("USER: "+user['username']+" login success");
 		return callback(null, user);
 	});
 })); 
@@ -58,23 +59,41 @@ passport.use("local-signup",new LocalStrategy(function(username, password, callb
 	User.findOne({ username: username }, function(err, user) {
 		if (err) { return next(err); }
 		if (user) {
-			console.log('Existing User');
+			logger.info("USER: Existing user: "+user['username']);
 			return callback(null, false);
 		}else{
-			console.log('signup');
+			logger.debug("USER: Creating user: "+user['username']);
 			var newUser = new User();
 			newUser.username = username;
 			newUser.password = newUser.generateHash(password);
 			newUser.save();
 		}
+		logger.info("USER: "+user['username']+" sign up success");
 		return callback(null, newUser);
 	});
 })); 
 
-// function to check if user is logged in
+User.find({username: "admin"}, function(err, obj){
+	if (err){
+		logger.error(err);
+	}
+	if (obj.length == 0){
+		var newUser = new User();
+			newUser.username = 'admin';
+			newUser.password = newUser.generateHash('admin');
+		newUser.save(function(err){
+			if (err){
+				logger.error(err);
+			}
+			logger.info("USER: initialize admin success");
+		});	
+	}
+});
+
+
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()) {
-    return next();
+    	return next();
     }
     req.flash("info", "You must be logged in to see this page.");
     res.redirect('/login');
@@ -94,13 +113,15 @@ router.get('/signup', function(req, res){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
 			}
             res.render('signup.ejs',{
+            	user: "Login",
                 testcases: testcases
             });
 		}
@@ -113,13 +134,15 @@ router.get('/login', function(req, res){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
 			}
             res.render('login.ejs',{
+            	user: "Login",
                 testcases: testcases
             });
 		}
@@ -127,15 +150,15 @@ router.get('/login', function(req, res){
 });
 
 router.post("/signup", passport.authenticate('local-signup', {
-    successRedirect : '/profile/info', // redirect to the secure profile section
-    failureRedirect : '/signup', // redirect back to the signup page if there is an error
-    failureFlash : true // allow flash messages
+    successRedirect : '/profile/info', 
+    failureRedirect : '/signup',
+    failureFlash : true
 }));
 
 router.post('/login',passport.authenticate('local-login', {
-    successRedirect : '/profile/info', // redirect to the secure profile section
-    failureRedirect : '/login', // redirect back to the signup page if there is an error
-    failureFlash : true // allow flash messages
+    successRedirect : '/profile/info',
+    failureRedirect : '/login',
+    failureFlash : true
 }));
 
 
@@ -145,8 +168,9 @@ router.get('/profile/info', isLoggedIn, function(req, res){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
@@ -156,6 +180,7 @@ router.get('/profile/info', isLoggedIn, function(req, res){
 			var command = [];
 			var postScript = [];
 			var log = [];
+			var status = [];
 			scheduler.find({owner: req.user.username}, function(err, obj){
 				for (var i=0; i<obj.length; i++){
 					startTime.push(obj[i]['startTime']);
@@ -163,16 +188,18 @@ router.get('/profile/info', isLoggedIn, function(req, res){
 					command.push(obj[i]['command']);
 					postScript.push(obj[i]['postScript']);
 					log.push(obj[i]['log']);
+					status.push(obj[i]['status']);
 				}
 				res.render('profile.ejs',{
 	            	testcases: testcases,
-	                user: req.user,
+	                user: req.user.username,
 	                type: 'info',
 	                startTime: startTime,
 	                preScript: preScript,
 	                command: command,
 	                postScript: postScript,
-	                log: log
+	                log: log,
+	                status: status
 	            });
 			});
         }
@@ -185,15 +212,16 @@ router.get('/profile/scheduler', isLoggedIn, function(req, res){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found')
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
 			}
             res.render('profile.ejs',{
             	testcases: testcases,
-                user: req.user,
+                user: req.user.username,
                 type: 'scheduler'
             });
         }
@@ -207,41 +235,102 @@ router.get('/profile/logs/:log', isLoggedIn, function(req, res){
 		if (err){
 			logger.error(err);
 		}
-		if (obj == null){
-			res.status(404).send('No recording found');
+		if (obj.length == 0){
+			logger.debug('Initialization needed.');
+			res.status(404).send(new Buffer('<p>No Testcases found. Please initialize DB.</p>'));
 		}else{
 			for (var i=0; i<obj.length; i++){
 				testcases.push(obj[i]['case_id']);
 			}
-			fs.readFile('./public/user/'+req.user.username+"/"+log, function(err,data){
-				if (err) throw err;
-				data = data.toString();
-				res.render('profile.ejs',{
-	            	testcases: testcases,
-	                user: req.user,
-	                type: 'logs',
-	                logfile: log,
-	                log: data
-	            });
+			var logs = [];
+			scheduler.find({owner: req.user.username}, function(err, obj){
+				for (var i=0; i<obj.length; i++){
+					logs.push(obj[i]['log']);
+				}
+				if (log == 'list'){
+					log = logs[0];
+				}
+				fs.readFile('./public/user/'+req.user.username+"/"+log, function(err,data){
+					if (err){
+						logger.error(err);
+						res.render('error.ejs',{
+							user: req.user.username,
+							testcases: testcases,
+							code: '404',
+							msg: "Can't find log file." 
+						});
+					}else{
+						data = data.toString();
+						res.render('profile.ejs',{
+			            	testcases: testcases,
+			                user: req.user.username,
+			                type: 'logs',
+			                logfile: log,
+			                log: data,
+			                logs:logs
+			            });
+					}
+				});
 			});
         }
     });
 });
 
 router.post('/profile/changepassword', isLoggedIn, function(req, res){
-
+	User.findOne({username: req.user.username}, function(err,result){
+		if (err) throw err;
+		var newpwd = result.generateHash(req.body.newpwd);
+		logger.debug('DB: user id: '+result._id);
+		logger.debug('newpwd: '+newpwd);
+		User.update({_id:result._id}, {password: newpwd}, function(err, user){
+			if (err) throw err;
+			logger.debug(user);
+		});
+		res.redirect('/profile/info');
+	});
 });
 
 router.post('/profile/scheduler', isLoggedIn, function(req, res){
-	var newScheduler = new scheduler();
-		newScheduler.owner = req.user.username;
-		newScheduler.startTime = req.body.startTime;
-		newScheduler.preScript = req.body.preScript;
-		newScheduler.command = req.body.command;
-		newScheduler.postScript = req.body.postScript;
-		newScheduler.log = req.body.log;
-	newScheduler.save();
-	res.redirect('/profile/info');
+	var startTime = new Date(req.body.startTime);
+	startTime = startTime.getTime();
+	var now = new Date().getTime();
+	logger.debug('Now is '+now+", schedule at "+startTime);
+	if (startTime >= now){
+		var schedule = startTime-now;
+		logger.info('Scheduled command '+req.body.command+' after '+schedule+' ms');
+		var newScheduler = new scheduler();
+			newScheduler.owner = req.user.username;
+			newScheduler.startTime = req.body.startTime;
+			newScheduler.preScript = req.body.preScript;
+			newScheduler.command = req.body.command;
+			newScheduler.postScript = req.body.postScript;
+			newScheduler.log = req.body.log;
+			newScheduler.status = 'NOT RUN';
+		newScheduler.save(function(err, scheduled){
+			res.redirect('/profile/info');
+			setTimeout(function(){
+				var cmd = req.body.preScript+" "+req.body.command+" "+req.body.postScript+" >" +req.body.log;
+				logger.debug(cmd);
+				logger.debug("DB: test id->"+scheduled._id);
+				exec(cmd, function(error){
+					if (error){
+						scheduler.update({_id: scheduled._id}, {status: 'BUILD FAIL'}, function(err){
+							if (err) throw err;
+						});
+						logger.error('SCHEDULER: Build Fail '+error);
+					}else{
+						scheduler.update({_id: scheduled._id}, {status: 'BUILD SUCCESS'}, function(err){
+							if (err) throw err;
+						});
+						logger.info('SCHEDULER: Build Success '+req.body.command);
+					}
+				});
+			}, schedule);
+		});
+	}else{
+		logger.error('Invalid scheduler');
+		res.redirect('/profile/scheduler');
+	}
 });
 
 module.exports = router;

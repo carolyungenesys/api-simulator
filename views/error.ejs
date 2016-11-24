@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, width=device-width">
+	<link rel="stylesheet" type="text/css" href="/css/style.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+
+<body>
+	<% include header.ejs %>
+	
+	<div style="width: 85%; background-color: #eee; margin-right: auto; margin-left: auto; margin-top: 11px; height:90vh;">
+		<div class="error">
+			<br><br><br>
+			<h2 style="font-size: 80px;letter-spacing: 10px;"><%= code%></h2><br>
+			<h2><%= msg%></h2>
+			<p>Go back to<a href="/"> home</a>.</p>
+			<br>
+		</div>
+	</div>
+	<% include footer.ejs %>
+	<script type="text/javascript" src="/js/script.js"></script>
+</body>
+</html>

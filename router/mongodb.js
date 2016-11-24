@@ -15,7 +15,7 @@ var client = createClient(
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.post('/mongodb/update', function(req, res){
+app.post('/internal/update', function(req, res){
 	for (var i=0; i<req.body.length; i++){
 		var flag;
 		var tmpid;
@@ -56,7 +56,7 @@ app.post('/mongodb/update', function(req, res){
 				}else{
 					tmpid = voiceTmp['_id'];
 					delete voiceTmp['_id'];
-					voiceModel.update(voiceTmp, function(err,voice){
+					voiceModel.update({'_id':tmpid}, voiceTmp, function(err,voice){
 						if (err){
 							logger.error(err);
 							res.status(500).send('Fail update voice recording');
@@ -90,7 +90,7 @@ app.post('/mongodb/update', function(req, res){
 				}else{
 					tmpid = screenTmp['_id'];
 					delete screenTmp['_id'];
-					screenModel.update(screenTmp, function(err,screen){
+					screenModel.update({'_id':tmpid}, screenTmp, function(err,screen){
 						if (err) {
 							logger.error(err);
 							res.status(500).send('Fail update screen recording');
